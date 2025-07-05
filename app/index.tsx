@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.sdsdhshtsx to edit this screen.</Text>
+      <Text>Edit app/index.sdsdhshtsxs to edit this screen.</Text>
     </View>
   );
 }

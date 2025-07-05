@@ -1,8 +1,26 @@
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Image,
+  Alert,
+} from "react-native";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { Link, router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useTransactions } from "../hooks/useTransactions";
-import { useEffect } from "react";
+import PageLoading from "../components/PageLoading";
+import { styles } from "@/assets/styles/home.styles";
+import { COLORS } from "@/constants/colors";
+
+import { Header } from "../components/Header";
+import { BalanceCard } from "../components/BalanceCard";
+import { TransactionItem } from "../components/TransactionItem";
+import { EmptyState } from "../components/EmptyState";
+
+// Category icons mapping
 
 export default function Page() {
   const { user } = useUser();
@@ -10,25 +28,67 @@ export default function Page() {
     useTransactions(user?.id);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (user?.id) {
+      loadData();
+    }
+  }, [loadData, user?.id]);
 
-  console.log(transactions);
-  console.log(summary);
-  console.log(user?.id);
+  if (isLoading) return <PageLoading />;
 
   return (
-    <View>
+    <View style={styles.container}>
       <SignedIn>
-        <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
+        <View style={styles.content}>
+          <Header user={user} />
+          <BalanceCard summary={summary} />
+
+          <View style={styles.transactionsHeaderContainer}>
+            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+            {transactions.length > 0 && (
+              <Link href="/transactions" asChild>
+                <TouchableOpacity>
+                  <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+                    View All
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            )}
+          </View>
+        </View>
+
+        {transactions.length === 0 ? (
+          <View style={styles.content}>
+            <EmptyState />
+          </View>
+        ) : (
+          <FlatList
+            data={transactions.slice(0, 10)} // Show only recent 10 transactions
+            keyExtractor={(item) =>
+              item.id?.toString() || Math.random().toString()
+            }
+            renderItem={({ item }) => (
+              <TransactionItem
+                transaction={item}
+                onDelete={deleteTransaction}
+              />
+            )}
+            style={styles.transactionsList}
+            contentContainerStyle={styles.transactionsListContent}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </SignedIn>
+
       <SignedOut>
-        <Link href="/(auth)/signIn">
-          <Text>Sign in</Text>
-        </Link>
-        <Link href="/(auth)/signUp">
-          <Text>Sign up</Text>
-        </Link>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.headerTitle}>Welcome to Expense Tracker</Text>
+          <Text style={styles.welcomeText}>Please sign in to continue</Text>
+          <Link href="/sign-in" asChild>
+            <TouchableOpacity style={styles.addButton}>
+              <Text style={styles.addButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
       </SignedOut>
     </View>
   );

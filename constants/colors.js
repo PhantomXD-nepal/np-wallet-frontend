@@ -56,3 +56,5 @@ export const THEMES = {
   purple: purpleTheme,
   ocean: oceanTheme,
 };
+
+export const COLORS = THEMES.coffee;

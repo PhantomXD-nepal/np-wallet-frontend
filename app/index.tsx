@@ -16,17 +16,32 @@ import { EmptyState } from "../components/EmptyState";
 
 export default function Page() {
   const { user } = useUser();
-  const { transactions, summary, isLoading, loadData, deleteTransaction } =
-    useTransactions(user?.id);
+  const {
+    transactions,
+    summary,
+    isLoading,
+    error,
+    loadData,
+    deleteTransaction,
+  } = useTransactions(user?.id);
 
   useEffect(() => {
     if (user?.id) {
       loadData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   if (isLoading) return <PageLoading />;
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.headerTitle}>Error loading data</Text>
+        <TouchableOpacity style={styles.addButton} onPress={loadData}>
+          <Text style={styles.addButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -86,6 +101,9 @@ export default function Page() {
           <Link href="/sign-in" asChild>
             <TouchableOpacity
               style={[styles.addButton, { paddingHorizontal: 30 }]}
+              onPress={() => {
+                /* Sign in handled by Clerk */
+              }}
             >
               <Text style={styles.addButtonText}>Sign In</Text>
             </TouchableOpacity>

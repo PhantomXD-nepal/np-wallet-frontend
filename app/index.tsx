@@ -1,15 +1,7 @@
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  Alert,
-} from "react-native";
+import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
-import { Link, router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
 import { useTransactions } from "../hooks/useTransactions";
 import PageLoading from "../components/PageLoading";
 import { styles } from "@/assets/styles/home.styles";
@@ -45,7 +37,7 @@ export default function Page() {
           <View style={styles.transactionsHeaderContainer}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
             {transactions.length > 0 && (
-              <Link href="/transactions" asChild>
+              <Link href="/" asChild>
                 <TouchableOpacity>
                   <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
                     View All

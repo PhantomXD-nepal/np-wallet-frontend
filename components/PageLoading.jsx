@@ -1,8 +1,7 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { styles } from "../assets/styles/home.styles";
 import { COLORS } from "../constants/colors";
-import { ActivityIndicator } from "react-native";
 
 const PageLoading = () => {
   return (

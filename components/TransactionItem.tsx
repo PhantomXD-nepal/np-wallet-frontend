@@ -32,7 +32,7 @@ export const TransactionItem = ({ transaction, onDelete }) => {
     );
   };
 
-  const isExpense = transaction.type === "expense";
+  const isExpense = transaction.is_expense || transaction.amount < 0;
   const amountColor = isExpense ? COLORS.error : COLORS.success;
   const amountPrefix = isExpense ? "-" : "+";
 

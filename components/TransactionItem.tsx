@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "@/assets/styles/home.styles";
-import { COLORS } from "@/constants/colors";
+import { styles } from "../assets/styles/home.styles";
+import { COLORS } from "../constants/colors";
 
 const categoryIcons = {
   food: "restaurant-outline",
@@ -28,7 +28,7 @@ export const TransactionItem = ({ transaction, onDelete }) => {
           style: "destructive",
           onPress: () => onDelete(transaction.id),
         },
-      ]
+      ],
     );
   };
 

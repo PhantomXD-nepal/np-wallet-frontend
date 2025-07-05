@@ -4,8 +4,8 @@ import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
 import { useTransactions } from "../hooks/useTransactions";
 import PageLoading from "../components/PageLoading";
-import { styles } from "@/assets/styles/home.styles";
-import { COLORS } from "@/constants/colors";
+import { styles } from "../assets/styles/home.styles";
+import { COLORS } from "../constants/colors";
 
 import { Header } from "../components/Header";
 import { BalanceCard } from "../components/BalanceCard";
@@ -23,7 +23,8 @@ export default function Page() {
     if (user?.id) {
       loadData();
     }
-  }, [loadData, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   if (isLoading) return <PageLoading />;
 
@@ -34,7 +35,7 @@ export default function Page() {
           <Header user={user} />
           <BalanceCard summary={summary} />
 
-          <View style={styles.transactionsHeaderContainer}>
+          <View style={[styles.transactionsHeaderContainer, { marginTop: 20 }]}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
             {transactions.length > 0 && (
               <Link href="/" asChild>
@@ -56,7 +57,7 @@ export default function Page() {
           <FlatList
             data={transactions.slice(0, 10)} // Show only recent 10 transactions
             keyExtractor={(item) =>
-              item.id?.toString() || Math.random().toString()
+              item.id.toString() || Math.random().toString()
             }
             renderItem={({ item }) => (
               <TransactionItem
@@ -64,19 +65,28 @@ export default function Page() {
                 onDelete={deleteTransaction}
               />
             )}
-            style={styles.transactionsList}
-            contentContainerStyle={styles.transactionsListContent}
+            style={[styles.transactionsList, { flex: 1 }]}
+            contentContainerStyle={[
+              styles.transactionsListContent,
+              { paddingTop: 10 },
+            ]}
             showsVerticalScrollIndicator={false}
           />
         )}
       </SignedIn>
 
       <SignedOut>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.headerTitle}>Welcome to Expense Tracker</Text>
-          <Text style={styles.welcomeText}>Please sign in to continue</Text>
+        <View style={[styles.loadingContainer, { padding: 20 }]}>
+          <Text style={[styles.headerTitle, { marginBottom: 10 }]}>
+            Welcome to Expense Tracker
+          </Text>
+          <Text style={[styles.welcomeText, { marginBottom: 20 }]}>
+            Please sign in to continue
+          </Text>
           <Link href="/sign-in" asChild>
-            <TouchableOpacity style={styles.addButton}>
+            <TouchableOpacity
+              style={[styles.addButton, { paddingHorizontal: 30 }]}
+            >
               <Text style={styles.addButtonText}>Sign In</Text>
             </TouchableOpacity>
           </Link>

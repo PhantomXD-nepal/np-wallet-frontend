@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
   Alert,
   ScrollView,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@clerk/clerk-expo";
-import { styles } from "@/assets/styles/create.styles";
-import { COLORS } from "@/constants/colors";
+import { styles } from "../assets/styles/create.styles";
+import { COLORS } from "../constants/colors";
 
 import { Header } from "../components/AddTransactionHeader.jsx";
 import { AmountInput } from "../components/AmountInput.jsx";

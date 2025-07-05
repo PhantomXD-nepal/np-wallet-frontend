@@ -5,7 +5,10 @@ import { Redirect, Slot } from "expo-router";
 
 export default function RootLayout() {
   return (
-    <ClerkProvider tokenCache={tokenCache}>
+    <ClerkProvider
+      tokenCache={tokenCache}
+      publishableKey={"pk_test_bWFnaWNhbC10dW5hLTczLmNsZXJrLmFjY291bnRzLmRldiQ"}
+    >
       <SafeScreen>
         <Slot />
         <Redirect href={"/(auth)/signIn"}></Redirect>

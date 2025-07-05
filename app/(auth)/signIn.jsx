@@ -1,13 +1,6 @@
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Image,
-  Alert,
-} from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { styles } from "../../assets/styles/auth.styles";
 
@@ -104,7 +97,7 @@ export default function Page() {
       </TouchableOpacity>
 
       <View style={styles.footerContainer}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
+        <Text style={styles.footerText}>Don&apos;t have an account?</Text>
         <Link href="/signUp">
           <Text style={styles.linkText}>Sign up</Text>
         </Link>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { styles } from "@/assets/styles/auth.styles.js";
+import { styles } from "../../assets/styles/auth.styles.js";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 import { Image } from "expo-image";
@@ -110,7 +110,10 @@ export default function SignUpScreen() {
       enableAutomaticScroll={true}
     >
       <View style={styles.container}>
-        <Image source={require("../../assets/images/revenue-i2.png")} style={styles.illustration} />
+        <Image
+          source={require("../../assets/images/revenue-i2.png")}
+          style={styles.illustration}
+        />
 
         <Text style={styles.title}>Create Account</Text>
 

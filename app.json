@@ -1,12 +1,46 @@
 {
   "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "68a87ff0-7fc2-4867-81cf-766d2a8ac477"
+    "name": "FinTrack",
+    "slug": "fintrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.phantomarcanedev.fintrack",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.phantomarcanedev.mobile"
+      "package": "com.phantomarcanedev.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "router": {
+        "origin": "https://github.com/expo/router/releases/download"
+      },
+      "eas": {
+        "projectId": "ffbb5b0c-93b0-4e84-b3e5-8864ab8dde18"
+      }
+    },
+    "scheme": "fintrack",
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

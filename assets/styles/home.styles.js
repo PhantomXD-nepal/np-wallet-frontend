@@ -122,7 +122,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   balanceStatAmount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
   },
   sectionTitle: {
@@ -251,8 +251,8 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
-    paddingBottom: 5,
+    marginBottom: 5,
+    paddingBottom: 0,
   },
   transactionsList: {
     flex: 1,
@@ -260,5 +260,33 @@ export const styles = StyleSheet.create({
   },
   transactionsListContent: {
     paddingBottom: 20,
+  },
+  // Date selector styles
+  dateSelector: {
+    marginBottom: 15,
+  },
+  dateSelectorContent: {
+    paddingRight: 20,
+  },
+  dateButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  dateButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  dateButtonText: {
+    color: COLORS.text,
+    fontSize: 14,
+  },
+  dateButtonTextActive: {
+    color: COLORS.white,
+    fontWeight: "500",
   },
 });

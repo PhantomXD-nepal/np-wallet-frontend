@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "68a87ff0-7fc2-4867-81cf-766d2a8ac477"
+      }
+    },
+    "android": {
+      "package": "com.phantomarcanedev.mobile"
+    }
+  }
+}

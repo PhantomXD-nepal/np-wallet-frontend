@@ -1,78 +1,162 @@
 import {
   View,
-  Text,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicatorBase,
-  ActivityIndicator,
+  Keyboard,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
-import { COLORS } from "../../constants/colors";
-import { Ionicons } from "@expo/vector-icons";
 
-const CATEGORIES = [
-  { id: "food", name: "Food & Drinks", icon: "fast-food" },
-  { id: "shopping", name: "Shopping", icon: "cart" },
-  { id: "transportation", name: "Transportation", icon: "car" },
-  { id: "entertainment", name: "Entertainment", icon: "film" },
-  { id: "bills", name: "Bills", icon: "receipt" },
-  { id: "income", name: "Income", icon: "cash" },
-  { id: "other", name: "Other", icon: "ellipsis-horizontal" },
-];
+import { Animated } from "react-native";
+
+// Import Components
+import AmountInput from "../../components/transaction/AmountInput";
+import CategorySelector from "../../components/transaction/CategorySelector";
+import FormField from "../../components/transaction/FormField";
+import HeaderBar from "../../components/transaction/HeaderBar";
+import LoadingOverlay from "../../components/transaction/LoadingOverlay";
+import TransactionTypeSelector from "../../components/transaction/TransactionTypeSelector";
 
 const CreateScreen = () => {
   const router = useRouter();
+  const navigation = useNavigation();
   const { user } = useUser();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    amount: "",
+    category: "",
+  });
+
+  // UI state
   const [isExpense, setIsExpense] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCreate = async () => {
-    // validations
-    if (!title.trim()) return Alert.alert("Error", "Please enter a transaction title");
-    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      Alert.alert("Error", "Please enter a valid amount");
-      return;
+  // Validation state
+  const [errors, setErrors] = useState({
+    title: "",
+    amount: "",
+    category: "",
+  });
+
+  // Fade in animation when component mounts and update navigation header
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
+    // Hide back button when using tab navigation
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, []);
+
+  // Handle form field changes
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  // Validate a specific field
+  const validateField = (field) => {
+    let isValid = true;
+
+    switch (field) {
+      case "title":
+        if (!formData.title.trim()) {
+          setErrors((prev) => ({ ...prev, title: "Title is required" }));
+          isValid = false;
+        }
+        break;
+      case "amount":
+        if (
+          !formData.amount ||
+          isNaN(parseFloat(formData.amount)) ||
+          parseFloat(formData.amount) <= 0
+        ) {
+          setErrors((prev) => ({ ...prev, amount: "Enter a valid amount" }));
+          isValid = false;
+        }
+        break;
+      case "category":
+        if (!formData.category) {
+          setErrors((prev) => ({
+            ...prev,
+            category: "Please select a category",
+          }));
+          isValid = false;
+        }
+        break;
     }
 
-    if (!selectedCategory) return Alert.alert("Error", "Please select a category");
+    return isValid;
+  };
+
+  // Validate all fields
+  const validateForm = () => {
+    const titleValid = validateField("title");
+    const amountValid = validateField("amount");
+    const categoryValid = validateField("category");
+
+    return titleValid && amountValid && categoryValid;
+  };
+
+  // Submit transaction
+  const handleCreate = async () => {
+    Keyboard.dismiss();
+
+    if (!validateForm()) {
+      return;
+    }
 
     setIsLoading(true);
     try {
       // Format the amount (negative for expenses, positive for income)
       const formattedAmount = isExpense
-        ? -Math.abs(parseFloat(amount))
-        : Math.abs(parseFloat(amount));
+        ? -Math.abs(parseFloat(formData.amount))
+        : Math.abs(parseFloat(formData.amount));
+
+      const transactionData = {
+        user_id: user.id,
+        title: formData.title,
+        amount: formattedAmount,
+        category: formData.category,
+      };
 
       const response = await fetch(`${API_URL}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          user_id: user.id,
-          title,
-          amount: formattedAmount,
-          category: selectedCategory,
-        }),
+        body: JSON.stringify(transactionData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData);
         throw new Error(errorData.error || "Failed to create transaction");
       }
 
+      // Show success message
       Alert.alert("Success", "Transaction created successfully");
-      router.back();
+
+      // Wait for 1.5 seconds before navigating back
+      // The loading indicator will remain visible during this time
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      router.replace("/");
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to create transaction");
       console.error("Error creating transaction:", error);
@@ -81,129 +165,95 @@ const CreateScreen = () => {
     }
   };
 
+  // Reset form
+  const resetForm = () => {
+    Alert.alert("Reset Form", "Are you sure you want to clear all fields?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Reset",
+        style: "destructive",
+        onPress: () => {
+          setFormData({
+            title: "",
+            amount: "",
+            category: "",
+          });
+          setErrors({
+            title: "",
+            amount: "",
+            category: "",
+          });
+        },
+      },
+    ]);
+  };
+
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Transaction</Text>
-        <TouchableOpacity
-          style={[styles.saveButtonContainer, isLoading && styles.saveButtonDisabled]}
-          onPress={handleCreate}
-          disabled={isLoading}
-        >
-          <Text style={styles.saveButton}>{isLoading ? "Saving..." : "Save"}</Text>
-          {!isLoading && <Ionicons name="checkmark" size={18} color={COLORS.primary} />}
-        </TouchableOpacity>
-      </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        {/* Header */}
+        <HeaderBar
+          title="New Transaction"
+          onBackPress={() => router.replace("/")}
+          onResetPress={resetForm}
+          onSavePress={handleCreate}
+          isLoading={isLoading}
+        />
 
-      <View style={styles.card}>
-        <View style={styles.typeSelector}>
-          {/* EXPENSE SELECTOR */}
-          <TouchableOpacity
-            style={[styles.typeButton, isExpense && styles.typeButtonActive]}
-            onPress={() => setIsExpense(true)}
-          >
-            <Ionicons
-              name="arrow-down-circle"
-              size={22}
-              color={isExpense ? COLORS.white : COLORS.expense}
-              style={styles.typeIcon}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.card}>
+            {/* Transaction Type Selector */}
+            <TransactionTypeSelector
+              isExpense={isExpense}
+              setIsExpense={setIsExpense}
             />
-            <Text style={[styles.typeButtonText, isExpense && styles.typeButtonTextActive]}>
-              Expense
-            </Text>
-          </TouchableOpacity>
 
-          {/* INCOME SELECTOR */}
-          <TouchableOpacity
-            style={[styles.typeButton, !isExpense && styles.typeButtonActive]}
-            onPress={() => setIsExpense(false)}
-          >
-            <Ionicons
-              name="arrow-up-circle"
-              size={22}
-              color={!isExpense ? COLORS.white : COLORS.income}
-              style={styles.typeIcon}
+            {/* Amount Input */}
+            <AmountInput
+              amount={formData.amount}
+              onChange={(value) => handleChange("amount", value)}
+              onBlur={() => validateField("amount")}
+              error={errors.amount}
             />
-            <Text style={[styles.typeButtonText, !isExpense && styles.typeButtonTextActive]}>
-              Income
-            </Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* AMOUNT CONTAINER */}
-        <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>$</Text>
-          <TextInput
-            style={styles.amountInput}
-            placeholder="0.00"
-            placeholderTextColor={COLORS.textLight}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
+            {/* Title Input */}
+            <FormField
+              icon="create-outline"
+              placeholder="Transaction Title"
+              value={formData.title}
+              onChange={(value) => handleChange("title", value)}
+              onBlur={() => validateField("title")}
+              error={errors.title}
+            />
+
+            {/* Category Selector */}
+            <CategorySelector
+              selectedCategory={formData.category}
+              onSelectCategory={(category) =>
+                handleChange("category", category)
+              }
+              error={errors.category}
+              isExpense={isExpense}
+            />
+          </View>
+        </ScrollView>
+
+        {/* Loading Overlay */}
+        {isLoading && (
+          <LoadingOverlay
+            message={
+              formData.title
+                ? `Creating "${formData.title}" transaction...`
+                : "Creating transaction..."
+            }
           />
-        </View>
-
-        {/* INPUT CONTAINER */}
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name="create-outline"
-            size={22}
-            color={COLORS.textLight}
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Transaction Title"
-            placeholderTextColor={COLORS.textLight}
-            value={title}
-            onChangeText={setTitle}
-          />
-        </View>
-
-        {/* TITLE */}
-        <Text style={styles.sectionTitle}>
-          <Ionicons name="pricetag-outline" size={16} color={COLORS.text} /> Category
-        </Text>
-
-        <View style={styles.categoryGrid}>
-          {CATEGORIES.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category.name && styles.categoryButtonActive,
-              ]}
-              onPress={() => setSelectedCategory(category.name)}
-            >
-              <Ionicons
-                name={category.icon}
-                size={20}
-                color={selectedCategory === category.name ? COLORS.white : COLORS.text}
-                style={styles.categoryIcon}
-              />
-              <Text
-                style={[
-                  styles.categoryButtonText,
-                  selectedCategory === category.name && styles.categoryButtonTextActive,
-                ]}
-              >
-                {category.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      )}
-    </View>
+        )}
+      </Animated.View>
+    </KeyboardAvoidingView>
   );
 };
+
 export default CreateScreen;

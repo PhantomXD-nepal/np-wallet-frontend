@@ -2,9 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import { API_URL } from "../constants/api";
 
-// const API_URL = "https://wallet-api-cxqp.onrender.com/api";
+const API_URL = "https://np-wallet-backend.onrender.com/api";
 // const API_URL = "http://localhost:5001/api";
 
 export const useTransactions = (userId) => {
@@ -20,7 +19,9 @@ export const useTransactions = (userId) => {
   const fetchTransactions = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/transactions/${userId}`);
+      console.log(response);
       const data = await response.json();
+      console.log(data);
       setTransactions(data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -53,7 +54,9 @@ export const useTransactions = (userId) => {
 
   const deleteTransaction = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/transactions/${id}`, { method: "DELETE" });
+      const response = await fetch(`${API_URL}/transactions/${id}`, {
+        method: "DELETE",
+      });
       if (!response.ok) throw new Error("Failed to delete transaction");
 
       // Refresh data after deletion

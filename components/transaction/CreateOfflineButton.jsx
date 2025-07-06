@@ -1,17 +1,18 @@
-import { TouchableOpacity, Text, Alert } from 'react-native';
-import { styles } from '../../assets/styles/create.styles';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../constants/colors';
-import { saveOfflineTransaction } from '../../lib/offlineSync';
+import { TouchableOpacity, Text, Alert } from "react-native";
+import { styles } from "../../assets/styles/create.styles";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../../constants/colors";
+import { saveOfflineTransaction } from "../../lib/offlineSync";
 
 const CreateOfflineButton = ({ formData, isExpense, isLoading, userId }) => {
   const handleSaveOffline = async () => {
     if (!formData.title || !formData.amount || !formData.category) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert("Error", "Please fill in all required fields");
       return;
     }
 
     try {
+      console.log("Creating offline transaction");
       // Format the amount (negative for expenses, positive for income)
       const formattedAmount = isExpense
         ? -Math.abs(parseFloat(formData.amount))
@@ -25,16 +26,21 @@ const CreateOfflineButton = ({ formData, isExpense, isLoading, userId }) => {
         created_at: new Date().toISOString(),
       };
 
+      console.log("Offline transaction data:", transactionData);
       await saveOfflineTransaction(transactionData);
+      console.log("Transaction saved to offline storage");
 
       Alert.alert(
-        'Saved Offline',
-        'Transaction saved locally. It will sync when you reconnect to the internet.',
-        [{ text: 'OK' }]
+        "Saved Offline",
+        "Transaction saved locally. It will sync when you reconnect to the internet.",
+        [{ text: "OK" }],
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to save transaction offline');
-      console.error('Error saving offline transaction:', error);
+      console.error("Error saving offline transaction:", error);
+      Alert.alert(
+        "Error",
+        `Failed to save transaction offline: ${error.message}`,
+      );
     }
   };
 

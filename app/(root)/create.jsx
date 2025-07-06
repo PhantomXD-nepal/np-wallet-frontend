@@ -11,6 +11,7 @@ import { useUser } from "@clerk/clerk-expo";
 import { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
+import NetInfo from "@react-native-community/netinfo";
 
 import { Animated } from "react-native";
 
@@ -21,6 +22,7 @@ import FormField from "../../components/transaction/FormField";
 import HeaderBar from "../../components/transaction/HeaderBar";
 import LoadingOverlay from "../../components/transaction/LoadingOverlay";
 import TransactionTypeSelector from "../../components/transaction/TransactionTypeSelector";
+import CreateOfflineButton from "../../components/transaction/CreateOfflineButton";
 
 const CreateScreen = () => {
   const router = useRouter();
@@ -38,6 +40,7 @@ const CreateScreen = () => {
   // UI state
   const [isExpense, setIsExpense] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   // Validation state
   const [errors, setErrors] = useState({
@@ -58,6 +61,25 @@ const CreateScreen = () => {
     navigation.setOptions({
       headerShown: false,
     });
+
+    // Check network status
+    const checkConnection = async () => {
+      const state = await NetInfo.fetch();
+      setIsOnline(state.isConnected);
+    };
+
+    checkConnection();
+
+    // Subscribe to network state updates - only update UI state, don't trigger sync
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(state.isConnected);
+      console.log(
+        "Network status changed in create screen:",
+        state.isConnected ? "online" : "offline",
+      );
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Handle form field changes
@@ -156,7 +178,8 @@ const CreateScreen = () => {
       // The loading indicator will remain visible during this time
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      router.replace("/");
+      // Wait a moment before navigating to ensure we don't interfere with sync
+      setTimeout(() => router.replace("/"), 100);
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to create transaction");
       console.error("Error creating transaction:", error);
@@ -197,10 +220,11 @@ const CreateScreen = () => {
         {/* Header */}
         <HeaderBar
           title="New Transaction"
-          onBackPress={() => router.replace("/")}
+          onBackPress={() => setTimeout(() => router.replace("/"), 100)}
           onResetPress={resetForm}
           onSavePress={handleCreate}
           isLoading={isLoading}
+          isOnline={isOnline}
         />
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -238,6 +262,16 @@ const CreateScreen = () => {
               error={errors.category}
               isExpense={isExpense}
             />
+
+            {/* Offline Button - Only show when offline */}
+            {!isOnline && (
+              <CreateOfflineButton
+                formData={formData}
+                isExpense={isExpense}
+                isLoading={isLoading}
+                userId={user.id}
+              />
+            )}
           </View>
         </ScrollView>
 

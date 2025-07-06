@@ -31,6 +31,9 @@ export const styles = StyleSheet.create({
   saveButtonDisabled: {
     opacity: 0.5,
   },
+  saveButtonOffline: {
+    opacity: 0.7,
+  },
   saveButton: {
     fontSize: 16,
     color: COLORS.primary,
@@ -158,5 +161,52 @@ export const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  loadingText: {
+    color: COLORS.white,
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  offlineButton: {
+    backgroundColor: COLORS.expense,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  offlineButtonDisabled: {
+    opacity: 0.5,
+  },
+  offlineButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 8,
+  },
+  offlineButtonIcon: {
+    marginRight: 4,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  resetButton: {
+    padding: 5,
   },
 });

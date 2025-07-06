@@ -3,13 +3,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../assets/styles/create.styles";
 import { COLORS } from "../../constants/colors";
 
-const HeaderBar = ({ title, onBackPress, onResetPress, onSavePress, isLoading }) => {
+const HeaderBar = ({
+  title,
+  onBackPress,
+  onResetPress,
+  onSavePress,
+  isLoading,
+  isOnline = true,
+}) => {
   return (
     <View style={styles.header}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={onBackPress}
-      >
+      <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
         <Ionicons name="arrow-back" size={24} color={COLORS.text} />
       </TouchableOpacity>
 
@@ -24,15 +28,20 @@ const HeaderBar = ({ title, onBackPress, onResetPress, onSavePress, isLoading })
           style={[
             styles.saveButtonContainer,
             isLoading && styles.saveButtonDisabled,
+            !isOnline && styles.saveButtonOffline,
           ]}
           onPress={onSavePress}
-          disabled={isLoading}
+          disabled={isLoading || !isOnline}
         >
           <Text style={styles.saveButton}>
-            {isLoading ? "Saving..." : "Save"}
+            {isLoading ? "Saving..." : isOnline ? "Save" : "Offline"}
           </Text>
           {!isLoading && (
-            <Ionicons name="checkmark" size={18} color={COLORS.primary} />
+            <Ionicons
+              name={isOnline ? "checkmark" : "cloud-offline-outline"}
+              size={18}
+              color={isOnline ? COLORS.primary : COLORS.textLight}
+            />
           )}
         </TouchableOpacity>
       </View>

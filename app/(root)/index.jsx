@@ -10,7 +10,7 @@ import {
   View,
   ScrollView,
 } from "react-native";
-import { SignOutButton } from "@/components/SignOutButton";
+import { SignOutButton } from "../../components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState, useCallback } from "react";
 import PageLoader from "../../components/PageLoader";
@@ -18,7 +18,9 @@ import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
+import { getUnsyncedTransactionCount } from "../../lib/offlineSync";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
+import { COLORS } from "../../constants/colors";
 
 export default function Page() {
   const { user } = useUser();
@@ -103,14 +105,7 @@ export default function Page() {
     }
   }, [selectedDate, transactions, summary]);
 
-  // Refresh data when the screen comes into focus (returning from create screen)
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-      setSelectedDate("All"); // Reset to "All" when returning to this screen
-      return () => {}; // cleanup function
-    }, [loadData]),
-  );
+  // We only need one useFocusEffect, the previous one does the job
 
   const handleDelete = (id) => {
     Alert.alert(
@@ -124,6 +119,98 @@ export default function Page() {
           onPress: () => deleteTransaction(id),
         },
       ],
+    );
+  };
+
+  // Component to show offline transaction indicator
+  const OfflineIndicator = () => {
+    const [count, setCount] = useState(0);
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    // Check for offline transactions
+    useEffect(() => {
+      const checkOfflineTransactions = async () => {
+        const unsyncedCount = await getUnsyncedTransactionCount();
+        setCount(unsyncedCount);
+      };
+
+      checkOfflineTransactions();
+
+      // Check periodically
+      const interval = setInterval(checkOfflineTransactions, 10000);
+      return () => clearInterval(interval);
+    }, []);
+
+    // Manually trigger sync when indicator is tapped
+    const handleSync = async () => {
+      if (isSyncing) return;
+
+      try {
+        // Check for internet connection first
+        const NetInfo = require("@react-native-community/netinfo");
+        const networkState = await NetInfo.fetch();
+
+        if (!networkState.isConnected) {
+          Alert.alert(
+            "No Internet Connection",
+            "Please connect to the internet to sync your offline transactions.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
+
+        setIsSyncing(true);
+        const { syncOfflineTransactions } = require("../../lib/offlineSync");
+        const result = await syncOfflineTransactions();
+        console.log("Manual sync result:", result);
+
+        // Refresh transactions after sync
+        await loadData();
+
+        // Check offline count again
+        const newCount = await getUnsyncedTransactionCount();
+        setCount(newCount);
+
+        if (result.success) {
+          Alert.alert("Sync Complete", result.message);
+        } else if (result.isAlreadySyncing) {
+          Alert.alert(
+            "Sync in Progress",
+            "Please wait for the current sync to complete.",
+          );
+        } else {
+          Alert.alert("Sync Issue", result.message);
+        }
+      } catch (error) {
+        console.error("Manual sync error:", error);
+        Alert.alert("Sync Error", "Could not sync offline transactions");
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    if (count === 0) return null;
+
+    return (
+      <TouchableOpacity
+        style={styles.offlineIndicator}
+        onPress={handleSync}
+        disabled={isSyncing}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name={isSyncing ? "sync-outline" : "cloud-offline-outline"}
+          size={16}
+          color={COLORS.expense}
+          style={[
+            { marginRight: 2 },
+            isSyncing ? { transform: [{ rotate: "45deg" }] } : null,
+          ]}
+        />
+        <Text style={styles.offlineIndicatorText}>
+          {isSyncing ? "Syncing..." : `${count} offline • Tap to sync`}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
@@ -165,6 +252,7 @@ export default function Page() {
 
         <View style={styles.transactionsHeaderContainer}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <OfflineIndicator />
         </View>
 
         {/* Date Selector - only show if we have transactions */}

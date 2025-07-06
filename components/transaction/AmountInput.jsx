@@ -9,7 +9,7 @@ const AmountInput = ({ amount, onChange, onBlur, error }) => {
   return (
     <>
       <View style={styles.amountContainer}>
-        <Text style={styles.currencySymbol}>$</Text>
+        <Text style={styles.currencySymbol}>Rs</Text>
         <TextInput
           ref={amountInputRef}
           style={styles.amountInput}

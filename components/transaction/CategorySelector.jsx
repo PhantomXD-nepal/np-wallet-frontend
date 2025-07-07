@@ -5,10 +5,20 @@ import { COLORS } from "../../constants/colors";
 
 const EXPENSE_CATEGORIES = [
   { id: "food", name: "Food & Drinks", icon: "fast-food" },
+  { id: "groceries", name: "Groceries", icon: "basket" },
   { id: "shopping", name: "Shopping", icon: "cart" },
   { id: "transportation", name: "Transportation", icon: "car" },
+  { id: "fuel", name: "Fuel", icon: "speedometer" },
   { id: "entertainment", name: "Entertainment", icon: "film" },
-  { id: "bills", name: "Bills", icon: "receipt" },
+  { id: "subscriptions", name: "Subscriptions", icon: "tv" },
+  { id: "bills", name: "Bills & Utilities", icon: "receipt" },
+  { id: "health", name: "Health & Medicine", icon: "medkit" },
+  { id: "education", name: "Education", icon: "school" },
+  { id: "travel", name: "Travel", icon: "airplane" },
+  { id: "home", name: "Home & Rent", icon: "home" },
+  { id: "pets", name: "Pet Care", icon: "paw" },
+  { id: "donation", name: "Donations", icon: "heart" },
+  { id: "tax", name: "Taxes", icon: "document-text" },
   { id: "other", name: "Other", icon: "ellipsis-horizontal" },
 ];
 
@@ -17,6 +27,12 @@ const INCOME_CATEGORIES = [
   { id: "freelance", name: "Freelance", icon: "briefcase" },
   { id: "investment", name: "Investment", icon: "trending-up" },
   { id: "gift", name: "Gift", icon: "gift" },
+  { id: "rental", name: "Rental Income", icon: "business" },
+  { id: "bonus", name: "Bonus", icon: "ribbon" },
+  { id: "interest", name: "Interest", icon: "wallet" },
+  { id: "dividend", name: "Dividends", icon: "stats-chart" },
+  { id: "refund", name: "Refunds", icon: "refresh" },
+  { id: "selling", name: "Selling Items", icon: "pricetag" },
   { id: "other", name: "Other", icon: "ellipsis-horizontal" },
 ];
 

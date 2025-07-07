@@ -4,7 +4,7 @@
     "slug": "fintrack",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/logo.png",
@@ -35,7 +35,7 @@
         "origin": "https://github.com/expo/router/releases/download"
       },
       "eas": {
-        "projectId": "ffbb5b0c-93b0-4e84-b3e5-8864ab8dde18"
+        "projectId": "4fc08bc3-4d15-4492-b2dd-6502838f6cf5"
       }
     },
     "scheme": "fintrack",

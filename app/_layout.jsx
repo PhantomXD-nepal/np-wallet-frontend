@@ -4,27 +4,11 @@ import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
-import { initOfflineSync } from "../lib/offlineSync";
+// We no longer need to import initOfflineSync since we're removing auto-sync
 
 export default function RootLayout() {
-  // Use ref to ensure we only initialize once
-  const syncInitialized = useRef(false);
-
-  // Initialize offline sync when app starts
-  useEffect(() => {
-    if (syncInitialized.current) return;
-
-    syncInitialized.current = true;
-    console.log("Initializing offline sync");
-    const unsubscribe = initOfflineSync();
-
-    return () => {
-      if (unsubscribe) {
-        console.log("Cleaning up offline sync");
-        unsubscribe();
-      }
-    };
-  }, []);
+  // We've removed the automatic offline sync initialization
+  // Sync will now only happen manually when the user taps the sync button
 
   return (
     <ClerkProvider

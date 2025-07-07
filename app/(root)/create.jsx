@@ -5,6 +5,7 @@ import {
   Platform,
   Alert,
   Keyboard,
+  Animated,
 } from "react-native";
 import { useRouter, useNavigation } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
@@ -12,8 +13,6 @@ import { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
 import NetInfo from "@react-native-community/netinfo";
-
-import { Animated } from "react-native";
 
 // Import Components
 import AmountInput from "../../components/transaction/AmountInput";

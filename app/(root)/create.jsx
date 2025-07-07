@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
 import NetInfo from "@react-native-community/netinfo";
+import { COLORS, getStoredTheme, THEMES } from "../../constants/colors";
 
 // Import Components
 import AmountInput from "../../components/transaction/AmountInput";
@@ -28,6 +29,7 @@ const CreateScreen = () => {
   const navigation = useNavigation();
   const { user } = useUser();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [themeColors, setThemeColors] = useState(COLORS);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -68,6 +70,16 @@ const CreateScreen = () => {
     };
 
     checkConnection();
+
+    // Load theme
+    const loadTheme = async () => {
+      const themeName = await getStoredTheme();
+      if (themeName && THEMES[themeName]) {
+        setThemeColors(THEMES[themeName]);
+      }
+    };
+
+    loadTheme();
 
     // Subscribe to network state updates - only update UI state, don't trigger sync
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -215,7 +227,12 @@ const CreateScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <Animated.View
+        style={[
+          styles.container,
+          { opacity: fadeAnim, backgroundColor: themeColors.background },
+        ]}
+      >
         {/* Header */}
         <HeaderBar
           title="New Transaction"
@@ -227,7 +244,15 @@ const CreateScreen = () => {
         />
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.card}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: themeColors.card,
+                borderColor: themeColors.border,
+              },
+            ]}
+          >
             {/* Transaction Type Selector */}
             <TransactionTypeSelector
               isExpense={isExpense}

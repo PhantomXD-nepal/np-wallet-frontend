@@ -1,4 +1,4 @@
-import { View, ActivityIndicator, TextBase, Text } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
 import { styles } from "../assets/styles/home.styles";
 import { COLORS } from "../constants/colors";
 

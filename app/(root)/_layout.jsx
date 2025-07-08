@@ -16,6 +16,14 @@ export default function Layout() {
         headerShown: false,
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textLight,
+        tabBarBadgeStyle: {
+          backgroundColor: COLORS.primary,
+          color: COLORS.card,
+          fontSize: 12,
+          fontWeight: "bold",
+          padding: 5,
+          borderRadius: 10,
+        },
         tabBarStyle: {
           backgroundColor: COLORS.card,
           borderTopWidth: 1,
@@ -31,7 +39,7 @@ export default function Layout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
@@ -40,7 +48,16 @@ export default function Layout() {
         options={{
           title: "Add Transaction",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
+            <Ionicons name="add-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="charts"
+        options={{
+          title: "Charts",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="pie-chart" size={size} color={color} />
           ),
         }}
       />

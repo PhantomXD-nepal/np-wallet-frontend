@@ -3,8 +3,8 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 
-const API_URL = "https://np-wallet-backend.onrender.com/api";
-// const API_URL = "http://localhost:5001/api";
+//const API_URL = "https://np-wallet-backend.onrender.com/api";
+const API_URL = "http://192.168.1.118:5001/api";
 
 export const useTransactions = (userId) => {
   const [transactions, setTransactions] = useState([]);
@@ -17,6 +17,7 @@ export const useTransactions = (userId) => {
 
   // useCallback is used for performance reasons, it will memoize the function
   const fetchTransactions = useCallback(async () => {
+    console.log(userId);
     try {
       const response = await fetch(`${API_URL}/transactions/${userId}`);
       console.log(response);

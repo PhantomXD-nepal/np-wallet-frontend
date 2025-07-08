@@ -1,5 +1,5 @@
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
-import { Link, useRouter, useFocusEffect } from "expo-router";
+import { useUser } from "@clerk/clerk-expo";
+import { useRouter } from "expo-router";
 import {
   Alert,
   FlatList,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SignOutButton } from "../../components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import PageLoader from "../../components/PageLoader";
 import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";

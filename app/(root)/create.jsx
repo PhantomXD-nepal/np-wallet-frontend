@@ -72,14 +72,6 @@ const CreateScreen = () => {
     checkConnection();
 
     // Load theme
-    const loadTheme = async () => {
-      const themeName = await getStoredTheme();
-      if (themeName && THEMES[themeName]) {
-        setThemeColors(THEMES[themeName]);
-      }
-    };
-
-    loadTheme();
 
     // Subscribe to network state updates - only update UI state, don't trigger sync
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -91,7 +83,7 @@ const CreateScreen = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  });
 
   // Handle form field changes
   const handleChange = (field, value) => {
@@ -168,6 +160,7 @@ const CreateScreen = () => {
         amount: formattedAmount,
         category: formData.category,
       };
+      console.log(transactionData);
 
       const response = await fetch(`${API_URL}/transactions`, {
         method: "POST",
@@ -176,6 +169,7 @@ const CreateScreen = () => {
         },
         body: JSON.stringify(transactionData),
       });
+      console.log(response);
 
       if (!response.ok) {
         const errorData = await response.json();

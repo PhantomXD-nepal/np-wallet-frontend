@@ -1,21 +1,32 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-const coffeeTheme = {
-  primary: "#8B593E",
-  background: "#FFF8F3",
-  text: "#4A3428",
-  border: "#E5D3B7",
-  white: "#FFFFFF",
-  textLight: "#9A8478",
-  expense: "#E74C3C",
-  income: "#2ECC71",
-  card: "#FFFFFF",
-  shadow: "#000000",
-};
+import { COLORS } from "../../constants/colors";
 
 const TransactionsList = ({ transactions, filterType }) => {
+  // Format date to a more readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString("en", { weekday: "long" });
+    } else {
+      return date.toLocaleDateString("en", { month: "short", day: "numeric" });
+    }
+  };
   const getCategoryIcon = (category) => {
     const iconMap = {
       Groceries: "basket-outline",
@@ -50,7 +61,9 @@ const TransactionsList = ({ transactions, filterType }) => {
   return (
     <View style={styles.chartContainer}>
       <View style={styles.chartHeader}>
-        <Ionicons name="time-outline" size={24} color={coffeeTheme.primary} />
+        <View style={styles.iconCircle}>
+          <Ionicons name="time-outline" size={24} color={COLORS.primary} />
+        </View>
         <Text style={styles.chartTitle}>
           Recent {isExpense ? "Expenses" : "Income"}
         </Text>
@@ -61,11 +74,17 @@ const TransactionsList = ({ transactions, filterType }) => {
           <Ionicons
             name={isExpense ? "trending-down-outline" : "trending-up-outline"}
             size={48}
-            color={coffeeTheme.textLight}
+            color={COLORS.textLight}
           />
           <Text style={styles.emptyText}>
             No recent {isExpense ? "expenses" : "income"} found
           </Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.addButtonText}>
+              Add {isExpense ? "Expense" : "Income"}
+            </Text>
+            <Ionicons name="add-circle" size={16} color={COLORS.primary} />
+          </TouchableOpacity>
         </View>
       ) : (
         <>
@@ -81,8 +100,8 @@ const TransactionsList = ({ transactions, filterType }) => {
                     {
                       backgroundColor:
                         parseFloat(transaction.amount) < 0
-                          ? "#FFE5E5"
-                          : "#E8F5E8",
+                          ? `${COLORS.expense}15`
+                          : `${COLORS.income}15`,
                     },
                   ]}
                 >
@@ -91,8 +110,8 @@ const TransactionsList = ({ transactions, filterType }) => {
                     size={20}
                     color={
                       parseFloat(transaction.amount) < 0
-                        ? coffeeTheme.expense
-                        : coffeeTheme.income
+                        ? COLORS.expense
+                        : COLORS.income
                     }
                   />
                 </View>
@@ -105,13 +124,7 @@ const TransactionsList = ({ transactions, filterType }) => {
                       {transaction.category}
                     </Text>
                     <Text style={styles.transactionDate}>
-                      {new Date(transaction.created_at).toLocaleDateString(
-                        "en",
-                        {
-                          month: "short",
-                          day: "numeric",
-                        },
-                      )}
+                      {formatDate(transaction.created_at)}
                     </Text>
                   </View>
                 </View>
@@ -123,19 +136,21 @@ const TransactionsList = ({ transactions, filterType }) => {
                     {
                       color:
                         parseFloat(transaction.amount) < 0
-                          ? coffeeTheme.expense
-                          : coffeeTheme.income,
+                          ? COLORS.expense
+                          : COLORS.income,
                     },
                   ]}
                 >
                   {parseFloat(transaction.amount) < 0 ? "-" : "+"}$
                   {Math.abs(parseFloat(transaction.amount)).toFixed(2)}
                 </Text>
-                <Ionicons
-                  name="chevron-forward-outline"
-                  size={16}
-                  color={coffeeTheme.textLight}
-                />
+                <View style={styles.arrowCircle}>
+                  <Ionicons
+                    name="chevron-forward-outline"
+                    size={16}
+                    color={COLORS.white}
+                  />
+                </View>
               </View>
             </TouchableOpacity>
           ))}
@@ -147,7 +162,7 @@ const TransactionsList = ({ transactions, filterType }) => {
             <Ionicons
               name="arrow-forward-outline"
               size={16}
-              color={coffeeTheme.primary}
+              color={COLORS.primary}
             />
           </TouchableOpacity>
         </>
@@ -158,12 +173,12 @@ const TransactionsList = ({ transactions, filterType }) => {
 
 const styles = StyleSheet.create({
   chartContainer: {
-    backgroundColor: coffeeTheme.white,
+    backgroundColor: COLORS.white,
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 16,
     padding: 20,
-    shadowColor: coffeeTheme.shadow,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -175,17 +190,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 8,
   },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: `${COLORS.primary}15`,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   chartTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: coffeeTheme.text,
+    color: COLORS.text,
   },
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: coffeeTheme.border,
+    borderBottomColor: COLORS.border,
   },
   transactionLeft: {
     flexDirection: "row",
@@ -206,7 +229,7 @@ const styles = StyleSheet.create({
   transactionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: coffeeTheme.text,
+    color: COLORS.text,
     marginBottom: 4,
   },
   transactionMeta: {
@@ -216,12 +239,13 @@ const styles = StyleSheet.create({
   },
   transactionCategory: {
     fontSize: 14,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
     fontWeight: "500",
   },
   transactionDate: {
     fontSize: 12,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
+    fontStyle: "italic",
   },
   transactionRight: {
     flexDirection: "row",
@@ -232,6 +256,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
+  arrowCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   viewAllButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -239,11 +271,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 8,
     gap: 8,
+    backgroundColor: `${COLORS.primary}10`,
+    borderRadius: 12,
+    paddingHorizontal: 16,
   },
   viewAllText: {
     fontSize: 16,
     fontWeight: "600",
-    color: coffeeTheme.primary,
+    color: COLORS.primary,
   },
   emptyState: {
     alignItems: "center",
@@ -252,8 +287,23 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
     textAlign: "center",
+    marginBottom: 8,
+  },
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: `${COLORS.primary}15`,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    marginRight: 6,
   },
 });
 

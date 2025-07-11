@@ -1,19 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-const coffeeTheme = {
-  primary: "#8B593E",
-  background: "#FFF8F3",
-  text: "#4A3428",
-  border: "#E5D3B7",
-  white: "#FFFFFF",
-  textLight: "#9A8478",
-  expense: "#E74C3C",
-  income: "#2ECC71",
-  card: "#FFFFFF",
-  shadow: "#000000",
-};
+import { COLORS } from "../../constants/colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 const SummaryCards = ({ transactions, filterType }) => {
   const filteredTransactions =
@@ -38,51 +33,107 @@ const SummaryCards = ({ transactions, filterType }) => {
   return (
     <>
       <View style={styles.summaryContainer}>
-        <View style={styles.summaryCard}>
+        <LinearGradient
+          colors={[
+            isExpense ? "#FFE5E5" : "#E5FFE5",
+            isExpense ? "#FFF5F5" : "#F5FFF5",
+          ]}
+          style={[styles.summaryCard, styles.gradientCard]}
+        >
           <View style={styles.summaryHeader}>
-            <Ionicons
-              name={isExpense ? "trending-down-outline" : "trending-up-outline"}
-              size={24}
-              color={isExpense ? coffeeTheme.expense : coffeeTheme.income}
-            />
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: isExpense
+                    ? `${COLORS.expense}20`
+                    : `${COLORS.income}20`,
+                },
+              ]}
+            >
+              <Ionicons
+                name={
+                  isExpense ? "trending-down-outline" : "trending-up-outline"
+                }
+                size={24}
+                color={isExpense ? COLORS.expense : COLORS.income}
+              />
+            </View>
             <Text style={styles.summaryLabel}>
               Total {isExpense ? "Expenses" : "Income"}
             </Text>
           </View>
-          <Text style={styles.summaryValue}>${totalAmount.toFixed(2)}</Text>
           <Text
-            style={
-              isExpense ? styles.summaryChange : styles.summaryChangePositive
-            }
+            style={[
+              styles.summaryValue,
+              {
+                color: isExpense ? COLORS.expense : COLORS.income,
+              },
+            ]}
           >
-            {isExpense ? "+12% from last week" : "+8% from last week"}
+            ${totalAmount.toFixed(2)}
           </Text>
-        </View>
+          <View style={styles.changeContainer}>
+            <Ionicons
+              name={isExpense ? "arrow-up" : "arrow-up"}
+              size={16}
+              color={isExpense ? COLORS.expense : COLORS.income}
+            />
+            <Text
+              style={
+                isExpense ? styles.summaryChange : styles.summaryChangePositive
+              }
+            >
+              {isExpense ? "12% from last week" : "8% from last week"}
+            </Text>
+          </View>
+        </LinearGradient>
 
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
-            <Ionicons
-              name="receipt-outline"
-              size={24}
-              color={coffeeTheme.primary}
-            />
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: `${COLORS.primary}20` },
+              ]}
+            >
+              <Ionicons
+                name="receipt-outline"
+                size={24}
+                color={COLORS.primary}
+              />
+            </View>
             <Text style={styles.summaryLabel}>Transactions</Text>
           </View>
           <Text style={styles.summaryValue}>{filteredTransactions.length}</Text>
-          <Text style={styles.summaryChangePositive}>
-            {isExpense ? "-3% from last week" : "+5% from last week"}
-          </Text>
+          <View style={styles.changeContainer}>
+            <Ionicons
+              name={isExpense ? "arrow-down" : "arrow-up"}
+              size={16}
+              color={isExpense ? COLORS.income : COLORS.income}
+            />
+            <Text style={styles.summaryChangePositive}>
+              {isExpense ? "3% from last week" : "5% from last week"}
+            </Text>
+          </View>
         </View>
       </View>
 
       <View style={styles.summaryContainer}>
         <View style={[styles.summaryCard, styles.fullWidthCard]}>
           <View style={styles.summaryHeader}>
-            <Ionicons
-              name="calculator-outline"
-              size={24}
-              color={coffeeTheme.income}
-            />
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: `${COLORS.income}20` },
+              ]}
+            >
+              <Ionicons
+                name="calculator-outline"
+                size={24}
+                color={COLORS.income}
+              />
+            </View>
             <Text style={styles.summaryLabel}>Average Transaction</Text>
           </View>
           <Text style={styles.summaryValue}>${avgTransaction.toFixed(2)}</Text>
@@ -105,14 +156,17 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: coffeeTheme.white,
+    backgroundColor: COLORS.white,
     padding: 20,
     borderRadius: 16,
-    shadowColor: coffeeTheme.shadow,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  gradientCard: {
+    overflow: "hidden",
   },
   fullWidthCard: {
     flex: 1,
@@ -123,25 +177,37 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 8,
   },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   summaryLabel: {
     fontSize: 14,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
     fontWeight: "500",
   },
   summaryValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: coffeeTheme.text,
-    marginBottom: 4,
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  changeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   summaryChange: {
-    fontSize: 12,
-    color: coffeeTheme.expense,
+    fontSize: 13,
+    color: COLORS.expense,
     fontWeight: "500",
   },
   summaryChangePositive: {
-    fontSize: 12,
-    color: coffeeTheme.income,
+    fontSize: 13,
+    color: COLORS.income,
     fontWeight: "500",
   },
 });

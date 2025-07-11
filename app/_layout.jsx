@@ -1,9 +1,11 @@
+import "../lib/webPolyfills"; // Import polyfills first
 import { Slot } from "expo-router";
 import SafeScreen from "../components/SafeScreen";
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Platform } from "react";
+import ModalProvider from "../components/extras/ModalProvider";
+import OfflineClerkProvider from "../components/auth/OfflineClerkProvider";
+import OfflineRoutingGuard from "../components/auth/OfflineRoutingGuard";
 // We no longer need to import initOfflineSync since we're removing auto-sync
 
 export default function RootLayout() {
@@ -11,14 +13,15 @@ export default function RootLayout() {
   // Sync will now only happen manually when the user taps the sync button
 
   return (
-    <ClerkProvider
-      tokenCache={tokenCache}
-      publishableKey="pk_test_bWFnaWNhbC10dW5hLTczLmNsZXJrLmFjY291bnRzLmRldiQ"
-    >
-      <SafeScreen>
-        <Slot />
-      </SafeScreen>
-      <StatusBar style="dark" />
-    </ClerkProvider>
+    <OfflineClerkProvider>
+      <ModalProvider>
+        <OfflineRoutingGuard>
+          <SafeScreen>
+            <Slot />
+          </SafeScreen>
+          <StatusBar style="dark" />
+        </OfflineRoutingGuard>
+      </ModalProvider>
+    </OfflineClerkProvider>
   );
 }

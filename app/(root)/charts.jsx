@@ -6,29 +6,20 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useUser } from "@clerk/clerk-expo";
+import { COLORS } from "../../constants/colors";
 
 // Import components
 import SummaryCards from "../../components/charts/SummaryCards";
-import DailyChart from "../../components/charts/DailyChart";
 import CategoryChart from "../../components/charts/CategoryChart";
 import TransactionsList from "../../components/charts/TransactionList";
-
-const coffeeTheme = {
-  primary: "#8B593E",
-  background: "#FFF8F3",
-  text: "#4A3428",
-  border: "#E5D3B7",
-  white: "#FFFFFF",
-  textLight: "#9A8478",
-  expense: "#E74C3C",
-  income: "#2ECC71",
-  card: "#FFFFFF",
-  shadow: "#000000",
-};
+import TimeFrameSelector from "../../components/charts/TimeFrameSelector";
+import TimeFrameChart from "../../components/charts/TimeFrameChart";
+import TrendSummary from "../../components/charts/TrendSummary";
 
 const ExpenseChartPage = () => {
   const { user } = useUser();
@@ -36,26 +27,35 @@ const ExpenseChartPage = () => {
     user?.id,
   );
   const [filterType, setFilterType] = useState("expense"); // 'expense' or 'income'
+  const [timeFrame, setTimeFrame] = useState("daily"); // 'daily', 'weekly', 'monthly'
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     if (user?.id) {
       loadData();
     }
+
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   }, [user?.id]);
 
   const toggleFilter = () => {
     setFilterType((prev) => (prev === "expense" ? "income" : "expense"));
   };
 
+  const handleTimeFrameChange = (newTimeFrame) => {
+    setTimeFrame(newTimeFrame);
+  };
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Ionicons
-            name="analytics-outline"
-            size={48}
-            color={coffeeTheme.primary}
-          />
+          <Ionicons name="analytics-outline" size={48} color={COLORS.primary} />
           <Text style={styles.loadingText}>Brewing your analytics...</Text>
         </View>
       </SafeAreaView>
@@ -66,8 +66,8 @@ const ExpenseChartPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
+      <Animated.ScrollView
+        style={[styles.scrollView, { opacity: fadeAnim }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -90,13 +90,13 @@ const ExpenseChartPage = () => {
                   isExpense ? "trending-down-outline" : "trending-up-outline"
                 }
                 size={20}
-                color={isExpense ? coffeeTheme.expense : coffeeTheme.income}
+                color={isExpense ? COLORS.expense : COLORS.income}
               />
               <Text
                 style={[
                   styles.filterText,
                   {
-                    color: isExpense ? coffeeTheme.expense : coffeeTheme.income,
+                    color: isExpense ? COLORS.expense : COLORS.income,
                   },
                 ]}
               >
@@ -106,18 +106,35 @@ const ExpenseChartPage = () => {
           </View>
         </View>
 
+        {/* Time Frame Selector */}
+        <TimeFrameSelector
+          activeTimeFrame={timeFrame}
+          onTimeFrameChange={handleTimeFrameChange}
+        />
+
         {/* Summary Cards */}
         <SummaryCards transactions={transactions} filterType={filterType} />
 
-        {/* Daily Chart */}
-        <DailyChart transactions={transactions} filterType={filterType} />
+        {/* Time Period Chart (replaces Daily Chart) */}
+        <TimeFrameChart
+          transactions={transactions}
+          filterType={filterType}
+          timeFrame={timeFrame}
+        />
+
+        {/* Trend Summary */}
+        <TrendSummary
+          transactions={transactions}
+          filterType={filterType}
+          timeFrame={timeFrame}
+        />
 
         {/* Category Chart */}
         <CategoryChart transactions={transactions} filterType={filterType} />
 
         {/* Recent Transactions */}
         <TransactionsList transactions={transactions} filterType={filterType} />
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 };
@@ -125,7 +142,7 @@ const ExpenseChartPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: coffeeTheme.background,
+    backgroundColor: COLORS.background,
   },
   scrollView: {
     flex: 1,
@@ -138,7 +155,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
     fontWeight: "500",
   },
   header: {
@@ -153,22 +170,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: coffeeTheme.text,
+    color: COLORS.text,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
   },
   filterButton: {
-    backgroundColor: coffeeTheme.white,
+    backgroundColor: COLORS.white,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    shadowColor: coffeeTheme.shadow,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,

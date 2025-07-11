@@ -1,7 +1,6 @@
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import {
-  Alert,
   FlatList,
   Image,
   RefreshControl,
@@ -21,6 +20,7 @@ import { TransactionItem } from "../../components/TransactionItem";
 import { getUnsyncedTransactionCount } from "../../lib/offlineSync";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
 import { COLORS } from "../../constants/colors";
+import { showModal } from "../../components/extras/customModal";
 
 export default function Page() {
   const { user } = useUser();
@@ -108,7 +108,7 @@ export default function Page() {
   // We only need one useFocusEffect, the previous one does the job
 
   const handleDelete = (id) => {
-    Alert.alert(
+    showModal(
       "Delete Transaction",
       "Are you sure you want to delete this transaction?",
       [
@@ -119,6 +119,7 @@ export default function Page() {
           onPress: () => deleteTransaction(id),
         },
       ],
+      "confirm",
     );
   };
 
@@ -151,10 +152,11 @@ export default function Page() {
         const networkState = await NetInfo.fetch();
 
         if (!networkState.isConnected) {
-          Alert.alert(
+          showModal(
             "No Internet Connection",
             "Please connect to the internet to sync your offline transactions.",
             [{ text: "OK" }],
+            "error",
           );
           return;
         }
@@ -172,18 +174,30 @@ export default function Page() {
         setCount(newCount);
 
         if (result.success) {
-          Alert.alert("Sync Complete", result.message);
+          showModal(
+            "Sync Complete",
+            result.message,
+            [{ text: "OK" }],
+            "success",
+          );
         } else if (result.isAlreadySyncing) {
-          Alert.alert(
+          showModal(
             "Sync in Progress",
             "Please wait for the current sync to complete.",
+            [{ text: "OK" }],
+            "info",
           );
         } else {
-          Alert.alert("Sync Issue", result.message);
+          showModal("Sync Issue", result.message, [{ text: "OK" }], "warning");
         }
       } catch (error) {
         console.error("Manual sync error:", error);
-        Alert.alert("Sync Error", "Could not sync offline transactions");
+        showModal(
+          "Sync Error",
+          "Could not sync offline transactions",
+          [{ text: "OK" }],
+          "error",
+        );
       } finally {
         setIsSyncing(false);
       }

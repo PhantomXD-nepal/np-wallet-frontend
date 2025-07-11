@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { PieChart } from "react-native-gifted-charts";
+import { View, Text, StyleSheet, Animated, Platform } from "react-native";
+import { PieChart } from "../charts/ChartWebCompatibility";
 import { Ionicons } from "@expo/vector-icons";
-import * as coffeeTheme from "../../constants/colors";
+import { COLORS } from "../../constants/colors";
 
 const CategoryChart = ({ transactions, filterType }) => {
   const getCategoryIcon = (category) => {
@@ -20,6 +20,8 @@ const CategoryChart = ({ transactions, filterType }) => {
       Freelance: "laptop-outline",
       Investment: "trending-up-outline",
       Gift: "gift-outline",
+      Rent: "home-outline",
+      Bills: "receipt-outline",
       Other: "ellipsis-horizontal-outline",
     };
     return iconMap[category] || "wallet-outline";
@@ -45,34 +47,45 @@ const CategoryChart = ({ transactions, filterType }) => {
     const colors =
       filterType === "expense"
         ? [
-            coffeeTheme.expense,
+            COLORS.expense,
             "#F39C9C",
             "#FF7F7F",
             "#FFB3B3",
-            "#A67C5A",
-            "#C8956D",
-            "#E5D3B7",
-            "#D4A574",
+            "#E57373",
+            "#EF9A9A",
+            "#FFCDD2",
+            "#F8BBD0",
+            "#CE93D8",
+            "#9FA8DA",
+            "#A5D6A7",
+            "#FFF59D",
+            "#FFCC80",
           ]
         : [
-            coffeeTheme.income,
+            COLORS.income,
             "#7ED321",
             "#A8E6A3",
             "#C8F7C5",
-            "#4ECDC4",
-            "#45B7D1",
-            "#96CEB4",
-            "#FFEAA7",
+            "#81C784",
+            "#4DB6AC",
+            "#4DD0E1",
+            "#4FC3F7",
+            "#64B5F6",
+            "#7986CB",
+            "#9575CD",
+            "#7E57C2",
+            "#FFD54F",
           ];
 
     return Object.entries(categoryTotals)
       .map(([category, amount], index) => ({
         value: amount,
         color: colors[index % colors.length],
-        gradientCenterColor: colors[index % colors.length],
-        focused: false,
+        gradientCenterColor: colors[(index + 2) % colors.length], // Slightly different shade for gradient
+        focused: index === 0, // Focus the largest category
         text: `$${amount.toFixed(0)}`,
         label: category,
+        shiftRadius: index === 0 ? 5 : 0, // Shift out the largest segment
       }))
       .sort((a, b) => b.value - a.value);
   }, [transactions, filterType]);
@@ -84,11 +97,13 @@ const CategoryChart = ({ transactions, filterType }) => {
     return (
       <View style={styles.chartContainer}>
         <View style={styles.chartHeader}>
-          <Ionicons
-            name="pie-chart-outline"
-            size={24}
-            color={coffeeTheme.primary}
-          />
+          <View style={styles.iconCircle}>
+            <Ionicons
+              name="pie-chart-outline"
+              size={24}
+              color={COLORS.primary}
+            />
+          </View>
           <Text style={styles.chartTitle}>
             {isExpense ? "Expenses" : "Income"} by Category
           </Text>
@@ -97,7 +112,7 @@ const CategoryChart = ({ transactions, filterType }) => {
           <Ionicons
             name={isExpense ? "trending-down-outline" : "trending-up-outline"}
             size={48}
-            color={coffeeTheme.textLight}
+            color={COLORS.textLight}
           />
           <Text style={styles.emptyText}>
             No {isExpense ? "expenses" : "income"} data available
@@ -110,11 +125,9 @@ const CategoryChart = ({ transactions, filterType }) => {
   return (
     <View style={styles.chartContainer}>
       <View style={styles.chartHeader}>
-        <Ionicons
-          name="pie-chart-outline"
-          size={24}
-          color={coffeeTheme.primary}
-        />
+        <View style={styles.iconCircle}>
+          <Ionicons name="pie-chart-outline" size={24} color={COLORS.primary} />
+        </View>
         <Text style={styles.chartTitle}>
           {isExpense ? "Expenses" : "Income"} by Category
         </Text>
@@ -123,11 +136,11 @@ const CategoryChart = ({ transactions, filterType }) => {
         <PieChart
           data={categoryData}
           donut
-          showGradient
-          sectionAutoFocus
+          showGradient={Platform.OS !== "web"}
+          sectionAutoFocus={Platform.OS !== "web"}
           radius={90}
           innerRadius={60}
-          innerCircleColor={coffeeTheme.background}
+          innerCircleColor={COLORS.background}
           centerLabelComponent={() => (
             <View style={styles.centerLabel}>
               <Text style={styles.centerLabelText}>Total</Text>
@@ -142,21 +155,43 @@ const CategoryChart = ({ transactions, filterType }) => {
       {/* Legend */}
       <View style={styles.legendContainer}>
         {categoryData.map((item, index) => (
-          <View key={index} style={styles.legendItem}>
+          <Animated.View key={index} style={styles.legendItem}>
             <View style={styles.legendLeft}>
               <View
-                style={[styles.legendColor, { backgroundColor: item.color }]}
+                style={[
+                  styles.legendColor,
+                  {
+                    backgroundColor: item.color,
+                    width: index === 0 ? 16 : 12,
+                    height: index === 0 ? 16 : 12,
+                  },
+                ]}
               />
-              <Ionicons
-                name={getCategoryIcon(item.label)}
-                size={16}
-                color={coffeeTheme.text}
-                style={styles.legendIcon}
-              />
-              <Text style={styles.legendText}>{item.label}</Text>
+              <View style={styles.iconCircleSmall}>
+                <Ionicons
+                  name={getCategoryIcon(item.label)}
+                  size={14}
+                  color={COLORS.text}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.legendText,
+                  index === 0 && styles.legendTextBold,
+                ]}
+              >
+                {item.label}
+              </Text>
             </View>
-            <Text style={styles.legendValue}>${item.value.toFixed(2)}</Text>
-          </View>
+            <Text
+              style={[
+                styles.legendValue,
+                index === 0 && styles.legendValueBold,
+              ]}
+            >
+              ${item.value.toFixed(2)}
+            </Text>
+          </Animated.View>
         ))}
       </View>
     </View>
@@ -165,12 +200,12 @@ const CategoryChart = ({ transactions, filterType }) => {
 
 const styles = StyleSheet.create({
   chartContainer: {
-    backgroundColor: coffeeTheme.white,
+    backgroundColor: COLORS.white,
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 16,
     padding: 20,
-    shadowColor: coffeeTheme.shadow,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -182,10 +217,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 8,
   },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: `${COLORS.primary}15`,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconCircleSmall: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: `${COLORS.primary}10`,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
   chartTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: coffeeTheme.text,
+    color: COLORS.text,
   },
   pieChartWrapper: {
     alignItems: "center",
@@ -196,21 +248,25 @@ const styles = StyleSheet.create({
   },
   centerLabelText: {
     fontSize: 14,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
   },
   centerLabelValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: coffeeTheme.text,
+    color: COLORS.text,
   },
   legendContainer: {
-    marginTop: 10,
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: `${COLORS.border}50`,
+    paddingTop: 16,
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 14,
+    paddingVertical: 4,
   },
   legendLeft: {
     flexDirection: "row",
@@ -223,18 +279,22 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginRight: 8,
   },
-  legendIcon: {
-    marginRight: 8,
-  },
   legendText: {
     fontSize: 14,
-    color: coffeeTheme.text,
+    color: COLORS.text,
     fontWeight: "500",
+  },
+  legendTextBold: {
+    fontWeight: "700",
   },
   legendValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
+  },
+  legendValueBold: {
+    fontWeight: "700",
+    color: COLORS.text,
   },
   emptyState: {
     alignItems: "center",
@@ -243,7 +303,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: coffeeTheme.textLight,
+    color: COLORS.textLight,
     textAlign: "center",
   },
 });

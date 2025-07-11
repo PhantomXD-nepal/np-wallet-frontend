@@ -1,4 +1,5 @@
-import { TouchableOpacity, Text, Alert } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
+import { showModal } from "../extras/customModal";
 import { styles } from "../../assets/styles/create.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
@@ -7,7 +8,12 @@ import { saveOfflineTransaction } from "../../lib/offlineSync";
 const CreateOfflineButton = ({ formData, isExpense, isLoading, userId }) => {
   const handleSaveOffline = async () => {
     if (!formData.title || !formData.amount || !formData.category) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showModal(
+        "Error",
+        "Please fill in all required fields",
+        [{ text: "OK" }],
+        "error",
+      );
       return;
     }
 
@@ -30,16 +36,19 @@ const CreateOfflineButton = ({ formData, isExpense, isLoading, userId }) => {
       await saveOfflineTransaction(transactionData);
       console.log("Transaction saved to offline storage");
 
-      Alert.alert(
+      showModal(
         "Saved Offline",
         "Transaction saved locally. It will sync when you reconnect to the internet.",
         [{ text: "OK" }],
+        "success",
       );
     } catch (error) {
       console.error("Error saving offline transaction:", error);
-      Alert.alert(
+      showModal(
         "Error",
         `Failed to save transaction offline: ${error.message}`,
+        [{ text: "OK" }],
+        "error",
       );
     }
   };

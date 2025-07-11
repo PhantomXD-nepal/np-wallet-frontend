@@ -3,7 +3,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Keyboard,
   Animated,
 } from "react-native";
@@ -23,6 +22,7 @@ import HeaderBar from "../../components/transaction/HeaderBar";
 import LoadingOverlay from "../../components/transaction/LoadingOverlay";
 import TransactionTypeSelector from "../../components/transaction/TransactionTypeSelector";
 import CreateOfflineButton from "../../components/transaction/CreateOfflineButton";
+import { showModal } from "../../components/extras/customModal";
 
 const CreateScreen = () => {
   const router = useRouter();
@@ -177,7 +177,12 @@ const CreateScreen = () => {
       }
 
       // Show success message
-      Alert.alert("Success", "Transaction created successfully");
+      showModal(
+        "Success",
+        "Transaction created successfully",
+        [{ text: "OK" }],
+        "success",
+      );
 
       // Wait for 1.5 seconds before navigating back
       // The loading indicator will remain visible during this time
@@ -186,7 +191,12 @@ const CreateScreen = () => {
       // Wait a moment before navigating to ensure we don't interfere with sync
       setTimeout(() => router.replace("/"), 100);
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to create transaction");
+      showModal(
+        "Error",
+        error.message || "Failed to create transaction",
+        [{ text: "OK" }],
+        "error",
+      );
       console.error("Error creating transaction:", error);
     } finally {
       setIsLoading(false);
@@ -195,7 +205,7 @@ const CreateScreen = () => {
 
   // Reset form
   const resetForm = () => {
-    Alert.alert("Reset Form", "Are you sure you want to clear all fields?", [
+    showModal("Reset Form", "Are you sure you want to clear all fields?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reset",

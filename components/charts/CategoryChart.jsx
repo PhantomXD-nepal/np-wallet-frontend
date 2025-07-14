@@ -1,6 +1,16 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, Animated, Platform } from "react-native";
-import { PieChart } from "../charts/ChartWebCompatibility";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
+import {
+  PieChart,
+  withTouchableWrapper,
+} from "../charts/ChartWebCompatibility";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 
@@ -134,7 +144,7 @@ const CategoryChart = ({ transactions, filterType }) => {
       </View>
       <View style={styles.pieChartWrapper}>
         <PieChart
-          data={categoryData}
+          a={categoryData}
           donut
           showGradient={Platform.OS !== "web"}
           sectionAutoFocus={Platform.OS !== "web"}
@@ -156,6 +166,7 @@ const CategoryChart = ({ transactions, filterType }) => {
       <View style={styles.legendContainer}>
         {categoryData.map((item, index) => (
           <Animated.View key={index} style={styles.legendItem}>
+            """"
             <View style={styles.legendLeft}>
               <View
                 style={[

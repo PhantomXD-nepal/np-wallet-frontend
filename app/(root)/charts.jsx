@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   SafeAreaView,
   TouchableOpacity,
   Animated,
+  AppState,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTransactions } from "../../hooks/useTransactions";
@@ -29,11 +29,20 @@ const ExpenseChartPage = () => {
   const [filterType, setFilterType] = useState("expense"); // 'expense' or 'income'
   const [timeFrame, setTimeFrame] = useState("daily"); // 'daily', 'weekly', 'monthly'
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const appState = useRef(AppState.currentState);
+  const refreshTimestamp = useRef(Date.now());
 
-  useEffect(() => {
+  // Function to refresh data
+  const refreshData = useCallback(() => {
     if (user?.id) {
       loadData();
+      refreshTimestamp.current = Date.now();
     }
+  }, [user?.id, loadData]);
+
+  // Initial data load and fade in animation
+  useEffect(() => {
+    refreshData();
 
     // Fade in animation
     Animated.timing(fadeAnim, {
@@ -41,7 +50,27 @@ const ExpenseChartPage = () => {
       duration: 500,
       useNativeDriver: true,
     }).start();
-  }, [user?.id]);
+  }, [user?.id, refreshData]);
+
+  // Monitor app state for background/foreground transitions
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      // When app comes to foreground after being in background
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active" &&
+        Date.now() - refreshTimestamp.current > 30000 // 30 seconds threshold
+      ) {
+        // Refresh data
+        refreshData();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [refreshData]);
 
   const toggleFilter = () => {
     setFilterType((prev) => (prev === "expense" ? "income" : "expense"));
@@ -71,6 +100,7 @@ const ExpenseChartPage = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
+
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View>
@@ -107,10 +137,19 @@ const ExpenseChartPage = () => {
         </View>
 
         {/* Time Frame Selector */}
-        <TimeFrameSelector
-          activeTimeFrame={timeFrame}
-          onTimeFrameChange={handleTimeFrameChange}
-        />
+        <View style={styles.timeFrameContainer}>
+          <TimeFrameSelector
+            activeTimeFrame={timeFrame}
+            onTimeFrameChange={handleTimeFrameChange}
+          />
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={refreshData}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="refresh-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Summary Cards */}
         <SummaryCards transactions={transactions} filterType={filterType} />
@@ -194,6 +233,41 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  timeFrameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 16,
+  },
+  refreshButton: {
+    backgroundColor: COLORS.white,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginLeft: 10,
+  },
+  refreshButton: {
+    backgroundColor: COLORS.white,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginLeft: 10,
   },
 });
 

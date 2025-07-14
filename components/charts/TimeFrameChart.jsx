@@ -1,5 +1,12 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
 import { BarChart, LineChart } from "../charts/ChartWebCompatibility";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
@@ -207,65 +214,73 @@ const TimeFrameChart = ({ transactions, filterType, timeFrame }) => {
       </View>
 
       <View style={styles.chartWrapper}>
-        {timeFrame === "monthly" ? (
-          <LineChart
-            data={chartData}
-            height={200}
-            width={screenWidth - 100}
-            noOfSections={4}
-            areaChart={Platform.OS !== "web"}
-            yAxisThickness={0}
-            xAxisThickness={1}
-            xAxisColor={COLORS.border}
-            color={chartColor}
-            hideDataPoints={Platform.OS === "web"}
-            dataPointsColor={chartColor}
-            startFillColor={Platform.OS === "web" ? undefined : gradientColor}
-            startOpacity={0.8}
-            endOpacity={0.1}
-            spacing={42}
-            maxValue={maxValue}
-            initialSpacing={10}
-            yAxisTextStyle={styles.yAxisText}
-            xAxisLabelTextStyle={styles.xAxisText}
-            rulesType="solid"
-            rulesColor={`${COLORS.border}50`}
-            yAxisLabelPrefix="$"
-          />
-        ) : (
-          <BarChart
-            data={chartData}
-            height={200}
-            width={screenWidth - 100}
-            barWidth={timeFrame === "daily" ? 30 : 40}
-            noOfSections={4}
-            barBorderRadius={8}
-            frontColor={chartColor}
-            yAxisThickness={0}
-            xAxisThickness={1}
-            xAxisColor={COLORS.border}
-            maxValue={maxValue}
-            spacing={timeFrame === "daily" ? 24 : 32}
-            backgroundColor="transparent"
-            showGradient={Platform.OS !== "web"}
-            gradientColor={gradientColor}
-            yAxisTextStyle={styles.yAxisText}
-            xAxisLabelTextStyle={styles.xAxisText}
-            showValuesAsTopLabel={Platform.OS !== "web"}
-            topLabelContainerStyle={styles.topLabelContainer}
-            renderTooltip={
-              Platform.OS === "web"
-                ? undefined
-                : (item, index) => (
-                    <View style={styles.tooltipContainer}>
-                      <Text style={styles.tooltipText}>
-                        ${item.value.toFixed(2)}
-                      </Text>
-                    </View>
-                  )
-            }
-          />
-        )}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.chartTouchable}
+          onPress={() =>
+            Platform.OS === "web" ? window.open("/charts", "_self") : null
+          }
+        >
+          {timeFrame === "monthly" ? (
+            <LineChart
+              data={chartData}
+              height={200}
+              width={screenWidth - 100}
+              noOfSections={4}
+              areaChart={Platform.OS !== "web"}
+              yAxisThickness={0}
+              xAxisThickness={1}
+              xAxisColor={COLORS.border}
+              color={chartColor}
+              hideDataPoints={Platform.OS === "web"}
+              dataPointsColor={chartColor}
+              startFillColor={Platform.OS === "web" ? undefined : gradientColor}
+              startOpacity={0.8}
+              endOpacity={0.1}
+              spacing={42}
+              maxValue={maxValue}
+              initialSpacing={10}
+              yAxisTextStyle={styles.yAxisText}
+              xAxisLabelTextStyle={styles.xAxisText}
+              rulesType="solid"
+              rulesColor={`${COLORS.border}50`}
+              yAxisLabelPrefix="$"
+            />
+          ) : (
+            <BarChart
+              data={chartData}
+              height={200}
+              width={screenWidth - 100}
+              barWidth={timeFrame === "daily" ? 30 : 40}
+              noOfSections={4}
+              barBorderRadius={8}
+              frontColor={chartColor}
+              yAxisThickness={0}
+              xAxisThickness={1}
+              xAxisColor={COLORS.border}
+              maxValue={maxValue}
+              spacing={timeFrame === "daily" ? 24 : 32}
+              backgroundColor="transparent"
+              showGradient={Platform.OS !== "web"}
+              gradientColor={gradientColor}
+              yAxisTextStyle={styles.yAxisText}
+              xAxisLabelTextStyle={styles.xAxisText}
+              showValuesAsTopLabel={Platform.OS !== "web"}
+              topLabelContainerStyle={styles.topLabelContainer}
+              renderTooltip={
+                Platform.OS === "web"
+                  ? undefined
+                  : (item, index) => (
+                      <View style={styles.tooltipContainer}>
+                        <Text style={styles.tooltipText}>
+                          ${item.value.toFixed(2)}
+                        </Text>
+                      </View>
+                    )
+              }
+            />
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -298,6 +313,8 @@ const styles = StyleSheet.create({
   chartWrapper: {
     alignItems: "center",
     marginTop: 10,
+    borderRadius: 8,
+    overflow: "hidden",
   },
   yAxisText: {
     color: COLORS.textLight,
@@ -330,6 +347,10 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+  },
+  chartTouchable: {
+    borderRadius: 8,
+    overflow: "hidden",
   },
   summaryItem: {
     flex: 1,

@@ -2,14 +2,14 @@ import { useUser } from "@clerk/clerk-expo";
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useOfflineAuth } from "../../components/auth/OfflineClerkProvider";
 import NetInfo from "@react-native-community/netinfo";
 import { useEffect, useState } from "react";
 
 export default function Layout() {
   const { isSignedIn, isLoaded } = useUser();
-  const { isOffline, canUseOffline } = useOfflineAuth();
+  const { canUseOffline } = useOfflineAuth();
   const [networkState, setNetworkState] = useState({ isConnected: true });
 
   // Monitor network state
@@ -19,8 +19,7 @@ export default function Layout() {
     });
 
     return () => unsubscribe();
-  }, []);
-
+  });
   if (!isLoaded) return null; // this is for a better ux
 
   // Allow offline access if we have valid cached auth data
@@ -80,24 +79,6 @@ export default function Layout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="pie-chart" size={size} color={color} />
           ),
-          tabBarButton: (props) => {
-            // Disable charts tab when offline
-            if (isOffline) {
-              return (
-                <View {...props} style={[props.style, { opacity: 0.5 }]}>
-                  {props.children}
-                  <View style={styles.disabledOverlay}>
-                    <Ionicons
-                      name="cloud-offline"
-                      size={16}
-                      color={COLORS.expense}
-                    />
-                  </View>
-                </View>
-              );
-            }
-            return <View {...props}>{props.children}</View>;
-          },
         }}
       />
     </Tabs>

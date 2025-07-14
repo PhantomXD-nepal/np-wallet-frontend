@@ -20,7 +20,26 @@ const coffeeTheme = {
 
 const DailyChart = ({ transactions, filterType }) => {
   const dailyData = useMemo(() => {
-    if (!transactions || transactions.length === 0) return [];
+    if (
+      !transactions ||
+      !Array.isArray(transactions) ||
+      transactions.length === 0
+    ) {
+      // Return a default dataset with zero values to prevent rendering issues
+      const today = new Date();
+      const defaultData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        defaultData.push({
+          value: 0,
+          label: date.toLocaleDateString("en", { weekday: "short" })[0],
+          frontColor: coffeeTheme.border,
+          gradientColor: coffeeTheme.border,
+        });
+      }
+      return defaultData;
+    }
 
     const last7Days = [];
     const today = new Date();
@@ -35,23 +54,25 @@ const DailyChart = ({ transactions, filterType }) => {
       });
     }
 
-    transactions.forEach((transaction) => {
-      const transactionDate = new Date(transaction.created_at)
-        .toISOString()
-        .split("T")[0];
-      const dayIndex = last7Days.findIndex(
-        (day) => day.date === transactionDate,
-      );
-      const amount = parseFloat(transaction.amount);
+    if (Array.isArray(transactions)) {
+      transactions.forEach((transaction) => {
+        const transactionDate = new Date(transaction.created_at)
+          .toISOString()
+          .split("T")[0];
+        const dayIndex = last7Days.findIndex(
+          (day) => day.date === transactionDate,
+        );
+        const amount = parseFloat(transaction.amount);
 
-      if (dayIndex !== -1) {
-        if (filterType === "expense" && amount < 0) {
-          last7Days[dayIndex].amount += Math.abs(amount);
-        } else if (filterType === "income" && amount > 0) {
-          last7Days[dayIndex].amount += amount;
+        if (dayIndex !== -1) {
+          if (filterType === "expense" && amount < 0) {
+            last7Days[dayIndex].amount += Math.abs(amount);
+          } else if (filterType === "income" && amount > 0) {
+            last7Days[dayIndex].amount += amount;
+          }
         }
-      }
-    });
+      });
+    }
 
     const chartColor =
       filterType === "expense" ? coffeeTheme.expense : coffeeTheme.income;
@@ -65,7 +86,10 @@ const DailyChart = ({ transactions, filterType }) => {
     }));
   }, [transactions, filterType]);
 
-  const maxDailyAmount = Math.max(...dailyData.map((d) => d.value), 100);
+  const maxDailyAmount =
+    Array.isArray(dailyData) && dailyData.length > 0
+      ? Math.max(...dailyData.map((d) => d.value), 10)
+      : 10;
   const isExpense = filterType === "expense";
 
   return (
@@ -82,7 +106,7 @@ const DailyChart = ({ transactions, filterType }) => {
       </View>
       <View style={styles.chartWrapper}>
         <BarChart
-          barWidth={30}
+          barWidth={Math.max(screenWidth * 0.06, 25)}
           noOfSections={4}
           barBorderRadius={8}
           frontColor={isExpense ? coffeeTheme.expense : coffeeTheme.income}
@@ -93,12 +117,12 @@ const DailyChart = ({ transactions, filterType }) => {
           yAxisTextStyle={styles.yAxisText}
           xAxisLabelTextStyle={styles.xAxisText}
           maxValue={maxDailyAmount}
-          spacing={24}
+          spacing={Math.max(screenWidth * 0.04, 20)}
           backgroundColor="transparent"
-          showGradient
+          showGradient={true}
           gradientColor={isExpense ? "#F39C9C" : "#7ED321"}
-          height={200}
-          width={screenWidth - 100}
+          height={180}
+          width={screenWidth - 60}
         />
       </View>
     </View>
@@ -108,10 +132,10 @@ const DailyChart = ({ transactions, filterType }) => {
 const styles = StyleSheet.create({
   chartContainer: {
     backgroundColor: coffeeTheme.white,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     marginBottom: 20,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     shadowColor: coffeeTheme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -131,14 +155,15 @@ const styles = StyleSheet.create({
   },
   chartWrapper: {
     alignItems: "center",
+    paddingHorizontal: 5,
   },
   yAxisText: {
     color: coffeeTheme.textLight,
-    fontSize: 12,
+    fontSize: Math.max(screenWidth * 0.025, 10),
   },
   xAxisText: {
     color: coffeeTheme.textLight,
-    fontSize: 12,
+    fontSize: Math.max(screenWidth * 0.025, 10),
   },
 });
 

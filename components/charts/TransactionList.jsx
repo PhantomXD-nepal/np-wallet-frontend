@@ -5,9 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 const TransactionsList = ({ transactions, filterType }) => {
   // Format date to a more readable format
@@ -47,14 +50,15 @@ const TransactionsList = ({ transactions, filterType }) => {
     return iconMap[category] || "wallet-outline";
   };
 
-  const filteredTransactions =
-    transactions
-      ?.filter((t) =>
-        filterType === "expense"
-          ? parseFloat(t.amount) < 0
-          : parseFloat(t.amount) > 0,
-      )
-      .slice(0, 5) || [];
+  const filteredTransactions = Array.isArray(transactions)
+    ? transactions
+        .filter((t) =>
+          filterType === "expense"
+            ? parseFloat(t.amount) < 0
+            : parseFloat(t.amount) > 0,
+        )
+        .slice(0, 5)
+    : [];
 
   const isExpense = filterType === "expense";
 
@@ -79,7 +83,7 @@ const TransactionsList = ({ transactions, filterType }) => {
           <Text style={styles.emptyText}>
             No recent {isExpense ? "expenses" : "income"} found
           </Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} key={`add-${filterType}`}>
             <Text style={styles.addButtonText}>
               Add {isExpense ? "Expense" : "Income"}
             </Text>
@@ -90,7 +94,7 @@ const TransactionsList = ({ transactions, filterType }) => {
         <>
           {filteredTransactions.map((transaction) => (
             <TouchableOpacity
-              key={transaction.id}
+              key={`transaction-${transaction.id}-${filterType}`}
               style={styles.transactionItem}
             >
               <View style={styles.transactionLeft}>
@@ -155,7 +159,10 @@ const TransactionsList = ({ transactions, filterType }) => {
             </TouchableOpacity>
           ))}
 
-          <TouchableOpacity style={styles.viewAllButton}>
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            key={`view-all-${filterType}`}
+          >
             <Text style={styles.viewAllText}>
               View All {isExpense ? "Expenses" : "Income"}
             </Text>
@@ -174,10 +181,10 @@ const TransactionsList = ({ transactions, filterType }) => {
 const styles = StyleSheet.create({
   chartContainer: {
     backgroundColor: COLORS.white,
-    marginHorizontal: 20,
+    marginHorizontal: Math.max(screenWidth * 0.04, 16),
     marginBottom: 20,
     borderRadius: 16,
-    padding: 20,
+    padding: Math.max(screenWidth * 0.04, 16),
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -191,22 +198,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: Math.max(screenWidth * 0.1, 40),
+    height: Math.max(screenWidth * 0.1, 40),
+    borderRadius: Math.max(screenWidth * 0.05, 20),
     backgroundColor: `${COLORS.primary}15`,
     justifyContent: "center",
     alignItems: "center",
   },
   chartTitle: {
-    fontSize: 18,
+    fontSize: Math.max(screenWidth * 0.045, 16),
     fontWeight: "600",
     color: COLORS.text,
   },
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: Math.max(screenWidth * 0.035, 12),
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -216,18 +223,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: Math.max(screenWidth * 0.1, 40),
+    height: Math.max(screenWidth * 0.1, 40),
+    borderRadius: Math.max(screenWidth * 0.05, 20),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: Math.max(screenWidth * 0.03, 10),
   },
   transactionDetails: {
     flex: 1,
   },
   transactionTitle: {
-    fontSize: 16,
+    fontSize: Math.max(screenWidth * 0.04, 14),
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: 4,
@@ -235,31 +242,31 @@ const styles = StyleSheet.create({
   transactionMeta: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: Math.max(screenWidth * 0.02, 6),
   },
   transactionCategory: {
-    fontSize: 14,
+    fontSize: Math.max(screenWidth * 0.032, 12),
     color: COLORS.textLight,
     fontWeight: "500",
   },
   transactionDate: {
-    fontSize: 12,
+    fontSize: Math.max(screenWidth * 0.028, 10),
     color: COLORS.textLight,
     fontStyle: "italic",
   },
   transactionRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: Math.max(screenWidth * 0.02, 6),
   },
   transactionAmount: {
-    fontSize: 16,
+    fontSize: Math.max(screenWidth * 0.038, 14),
     fontWeight: "700",
   },
   arrowCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: Math.max(screenWidth * 0.055, 20),
+    height: Math.max(screenWidth * 0.055, 20),
+    borderRadius: Math.max(screenWidth * 0.0275, 10),
     backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
@@ -268,15 +275,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
+    paddingVertical: Math.max(screenWidth * 0.035, 12),
     marginTop: 8,
-    gap: 8,
+    gap: Math.max(screenWidth * 0.02, 6),
     backgroundColor: `${COLORS.primary}10`,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: Math.max(screenWidth * 0.04, 14),
   },
   viewAllText: {
-    fontSize: 16,
+    fontSize: Math.max(screenWidth * 0.04, 14),
     fontWeight: "600",
     color: COLORS.primary,
   },
@@ -286,7 +293,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: Math.max(screenWidth * 0.04, 14),
     color: COLORS.textLight,
     textAlign: "center",
     marginBottom: 8,
@@ -295,8 +302,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: `${COLORS.primary}15`,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: Math.max(screenWidth * 0.025, 8),
+    paddingHorizontal: Math.max(screenWidth * 0.04, 14),
     borderRadius: 20,
     marginTop: 10,
   },
@@ -304,6 +311,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "600",
     marginRight: 6,
+    fontSize: Math.max(screenWidth * 0.035, 12),
   },
 });
 

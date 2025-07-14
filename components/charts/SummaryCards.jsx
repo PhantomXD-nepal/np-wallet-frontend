@@ -5,23 +5,30 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 import { LinearGradient } from "expo-linear-gradient";
 
+const { width: screenWidth } = Dimensions.get("window");
+
 const SummaryCards = ({ transactions, filterType }) => {
   const filteredTransactions =
-    transactions?.filter((t) =>
-      filterType === "expense"
-        ? parseFloat(t.amount) < 0
-        : parseFloat(t.amount) > 0,
-    ) || [];
+    (Array.isArray(transactions)
+      ? transactions.filter((t) =>
+          filterType === "expense"
+            ? parseFloat(t.amount) < 0
+            : parseFloat(t.amount) > 0,
+        )
+      : []) || [];
 
-  const totalAmount = filteredTransactions.reduce(
-    (sum, t) => sum + Math.abs(parseFloat(t.amount)),
-    0,
-  );
+  const totalAmount = Array.isArray(filteredTransactions)
+    ? filteredTransactions.reduce(
+        (sum, t) => sum + Math.abs(parseFloat(t.amount)),
+        0,
+      )
+    : 0;
 
   const avgTransaction =
     filteredTransactions.length > 0
@@ -150,15 +157,15 @@ const SummaryCards = ({ transactions, filterType }) => {
 const styles = StyleSheet.create({
   summaryContainer: {
     flexDirection: "row",
-    paddingHorizontal: 20,
+    paddingHorizontal: Math.max(screenWidth * 0.04, 16),
     marginBottom: 16,
-    gap: 12,
+    gap: Math.max(screenWidth * 0.03, 8),
   },
   summaryCard: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 20,
-    borderRadius: 16,
+    padding: Math.max(screenWidth * 0.04, 14),
+    borderRadius: 12,
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -174,39 +181,39 @@ const styles = StyleSheet.create({
   summaryHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: Math.max(screenWidth * 0.025, 8),
+    gap: Math.max(screenWidth * 0.02, 6),
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: Math.max(screenWidth * 0.1, 36),
+    height: Math.max(screenWidth * 0.1, 36),
+    borderRadius: Math.max(screenWidth * 0.05, 18),
     justifyContent: "center",
     alignItems: "center",
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: Math.max(screenWidth * 0.032, 12),
     color: COLORS.textLight,
     fontWeight: "500",
   },
   summaryValue: {
-    fontSize: 28,
+    fontSize: Math.max(screenWidth * 0.065, 22),
     fontWeight: "bold",
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: Math.max(screenWidth * 0.02, 6),
   },
   changeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: Math.max(screenWidth * 0.01, 3),
   },
   summaryChange: {
-    fontSize: 13,
+    fontSize: Math.max(screenWidth * 0.03, 11),
     color: COLORS.expense,
     fontWeight: "500",
   },
   summaryChangePositive: {
-    fontSize: 13,
+    fontSize: Math.max(screenWidth * 0.03, 11),
     color: COLORS.income,
     fontWeight: "500",
   },

@@ -1,7 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 /**
  * TimeFrameSelector - Component for selecting daily, weekly, or monthly time frames
@@ -67,14 +75,14 @@ const TimeFrameSelector = ({ activeTimeFrame, onTimeFrameChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
+    marginHorizontal: Math.max(screenWidth * 0.04, 16),
     marginBottom: 16,
   },
   selectorContainer: {
     flexDirection: "row",
     backgroundColor: COLORS.white,
     borderRadius: 12,
-    padding: 4,
+    padding: Math.max(screenWidth * 0.01, 3),
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -86,18 +94,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: Math.max(screenWidth * 0.025, 8),
+    paddingHorizontal: Math.max(screenWidth * 0.02, 6),
     borderRadius: 8,
   },
   activeTimeFrameButton: {
     backgroundColor: COLORS.primary,
   },
   timeFrameIcon: {
-    marginRight: 4,
+    marginRight: Math.max(screenWidth * 0.01, 3),
   },
   timeFrameText: {
-    fontSize: 14,
+    fontSize: Math.max(screenWidth * 0.035, 12),
     fontWeight: "600",
     color: COLORS.textLight,
   },

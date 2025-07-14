@@ -6,7 +6,7 @@ const PageLoader = () => {
   return (
     <View style={styles.loadingContainer}>
       <ActivityIndicator size="large" color={COLORS.primary} />
-      <Text>Syncing Offile Transactions .....</Text>
+      <Text>Loading .....</Text>
     </View>
   );
 };

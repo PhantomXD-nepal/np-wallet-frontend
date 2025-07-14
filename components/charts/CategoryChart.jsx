@@ -4,17 +4,18 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Platform,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
-import {
-  PieChart,
-  withTouchableWrapper,
-} from "../charts/ChartWebCompatibility";
+import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
+import { useState } from "react";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 const CategoryChart = ({ transactions, filterType }) => {
+  const fadeAnim = useState(new Animated.Value(0))[0];
   const getCategoryIcon = (category) => {
     const iconMap = {
       Groceries: "basket-outline",
@@ -38,7 +39,25 @@ const CategoryChart = ({ transactions, filterType }) => {
   };
 
   const categoryData = useMemo(() => {
-    if (!transactions || transactions.length === 0) return [];
+    // Default empty state data
+    const defaultData = [
+      {
+        value: 1,
+        color: filterType === "expense" ? COLORS.expense : COLORS.income,
+        gradientCenterColor: filterType === "expense" ? "#F39C9C" : "#7ED321",
+        focused: true,
+        text: "$0",
+        label: "No Data",
+      },
+    ];
+
+    if (
+      !transactions ||
+      !Array.isArray(transactions) ||
+      transactions.length === 0
+    ) {
+      return defaultData;
+    }
 
     const categoryTotals = {};
 
@@ -87,7 +106,14 @@ const CategoryChart = ({ transactions, filterType }) => {
             "#FFD54F",
           ];
 
-    return Object.entries(categoryTotals)
+    const entries = Object.entries(categoryTotals);
+
+    // If we have no data entries after filtering, return default data
+    if (entries.length === 0) {
+      return defaultData;
+    }
+
+    return entries
       .map(([category, amount], index) => ({
         value: amount,
         color: colors[index % colors.length],
@@ -100,10 +126,18 @@ const CategoryChart = ({ transactions, filterType }) => {
       .sort((a, b) => b.value - a.value);
   }, [transactions, filterType]);
 
-  const totalAmount = categoryData.reduce((sum, item) => sum + item.value, 0);
+  const totalAmount =
+    categoryData && categoryData.length
+      ? categoryData.reduce((sum, item) => sum + (item.value || 0), 0)
+      : 0;
   const isExpense = filterType === "expense";
 
-  if (categoryData.length === 0) {
+  // Calculate responsive dimensions for mobile
+  const chartRadius = Math.min(screenWidth * 0.25, 90);
+  const chartInnerRadius = chartRadius * 0.65;
+
+  // Check if we're using the default data (value = 1, label = "No Data")
+  if (categoryData.length === 1 && categoryData[0].label === "No Data") {
     return (
       <View style={styles.chartContainer}>
         <View style={styles.chartHeader}>
@@ -144,17 +178,29 @@ const CategoryChart = ({ transactions, filterType }) => {
       </View>
       <View style={styles.pieChartWrapper}>
         <PieChart
-          a={categoryData}
+          data={categoryData}
           donut
-          showGradient={Platform.OS !== "web"}
-          sectionAutoFocus={Platform.OS !== "web"}
-          radius={90}
-          innerRadius={60}
+          showGradient
+          sectionAutoFocus
+          radius={chartRadius}
+          innerRadius={chartInnerRadius}
           innerCircleColor={COLORS.background}
           centerLabelComponent={() => (
             <View style={styles.centerLabel}>
-              <Text style={styles.centerLabelText}>Total</Text>
-              <Text style={styles.centerLabelValue}>
+              <Text
+                style={[
+                  styles.centerLabelText,
+                  { fontSize: chartRadius * 0.15 },
+                ]}
+              >
+                Total
+              </Text>
+              <Text
+                style={[
+                  styles.centerLabelValue,
+                  { fontSize: chartRadius * 0.2 },
+                ]}
+              >
                 ${totalAmount.toFixed(0)}
               </Text>
             </View>
@@ -164,46 +210,46 @@ const CategoryChart = ({ transactions, filterType }) => {
 
       {/* Legend */}
       <View style={styles.legendContainer}>
-        {categoryData.map((item, index) => (
-          <Animated.View key={index} style={styles.legendItem}>
-            """"
-            <View style={styles.legendLeft}>
-              <View
-                style={[
-                  styles.legendColor,
-                  {
-                    backgroundColor: item.color,
-                    width: index === 0 ? 16 : 12,
-                    height: index === 0 ? 16 : 12,
-                  },
-                ]}
-              />
-              <View style={styles.iconCircleSmall}>
-                <Ionicons
-                  name={getCategoryIcon(item.label)}
-                  size={14}
-                  color={COLORS.text}
+        {categoryData &&
+          categoryData.map((item, index) => (
+            <Animated.View key={index} style={styles.legendItem}>
+              <Animated.View style={[styles.legendLeft, { opacity: fadeAnim }]}>
+                <View
+                  style={[
+                    styles.legendColor,
+                    {
+                      backgroundColor: item.color,
+                      width: index === 0 ? 16 : 12,
+                      height: index === 0 ? 16 : 12,
+                    },
+                  ]}
                 />
-              </View>
+                <View style={styles.iconCircleSmall}>
+                  <Ionicons
+                    name={getCategoryIcon(item.label)}
+                    size={14}
+                    color={COLORS.text}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.legendText,
+                    index === 0 && styles.legendTextBold,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </Animated.View>
               <Text
                 style={[
-                  styles.legendText,
-                  index === 0 && styles.legendTextBold,
+                  styles.legendValue,
+                  index === 0 && styles.legendValueBold,
                 ]}
               >
-                {item.label}
+                ${item.value.toFixed(2)}
               </Text>
-            </View>
-            <Text
-              style={[
-                styles.legendValue,
-                index === 0 && styles.legendValueBold,
-              ]}
-            >
-              ${item.value.toFixed(2)}
-            </Text>
-          </Animated.View>
-        ))}
+            </Animated.View>
+          ))}
       </View>
     </View>
   );
@@ -212,10 +258,10 @@ const CategoryChart = ({ transactions, filterType }) => {
 const styles = StyleSheet.create({
   chartContainer: {
     backgroundColor: COLORS.white,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     marginBottom: 20,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -253,6 +299,7 @@ const styles = StyleSheet.create({
   pieChartWrapper: {
     alignItems: "center",
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
   centerLabel: {
     alignItems: "center",

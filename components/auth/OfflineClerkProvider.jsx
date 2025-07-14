@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { ClerkProvider, useUser, useAuth } from '@clerk/clerk-expo';
-import { tokenCache } from '@clerk/clerk-expo/token-cache';
-import { showModal } from '../extras/customModal';
-import NetInfo from '@react-native-community/netinfo';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { ClerkProvider, useUser, useAuth } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
+import { showModal } from "../extras/customModal";
+import NetInfo from "@react-native-community/netinfo";
 import {
   saveAuthDataLocally,
   getLocalAuthData,
   clearLocalAuthData,
   updateLastOnlineCheck,
   shouldEnforceOnlineAuth,
-} from '../../lib/offlineAuth';
+} from "../../lib/offlineAuth";
 
 // Create context for offline state
 const OfflineAuthContext = createContext({
@@ -35,12 +35,12 @@ export const OfflineClerkProvider = ({ children }) => {
 
   // Monitor network status
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsOffline(!state.isConnected);
     });
 
     // Initial check
-    NetInfo.fetch().then(state => {
+    NetInfo.fetch().then((state) => {
       setIsOffline(!state.isConnected);
     });
 
@@ -54,7 +54,9 @@ export const OfflineClerkProvider = ({ children }) => {
       const shouldEnforce = await shouldEnforceOnlineAuth();
 
       setCanUseOffline(!!localAuth && !localAuth.isExpired);
-      setLastOnlineAuth(localAuth ? new Date(localAuth.session.lastVerifiedOnline) : null);
+      setLastOnlineAuth(
+        localAuth ? new Date(localAuth.session.lastVerifiedOnline) : null,
+      );
       setEnforceOnlineAuth(shouldEnforce);
 
       if (shouldEnforce && isOffline) {
@@ -62,7 +64,7 @@ export const OfflineClerkProvider = ({ children }) => {
           "Authentication Required",
           "You've been offline for too long. Please connect to the internet to verify your identity.",
           [{ text: "OK" }],
-          "warning"
+          "warning",
         );
       }
     };
@@ -101,7 +103,7 @@ const OfflineAuthHandler = ({ children }) => {
 
   // Monitor network status for this component too
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setNetworkState(state);
     });
 
@@ -118,14 +120,16 @@ const OfflineAuthHandler = ({ children }) => {
           // Create a session object with necessary data
           const session = {
             token,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+            expiresAt: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
+            ).toISOString(), // 7 days
             lastVerifiedOnline: new Date().toISOString(),
           };
 
           await saveAuthDataLocally(user, session);
           await updateLastOnlineCheck();
         } catch (error) {
-          console.error('Error saving auth data for offline use:', error);
+          console.error("Error saving auth data for offline use:", error);
         }
       }
     };

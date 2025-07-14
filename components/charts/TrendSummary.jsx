@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 /**
  * TrendSummary component displays insightful trends and statistics for the selected time period
@@ -19,10 +21,12 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
       return [];
     }
 
-    // Filter transactions by type (expense/income)
-    const filteredTransactions = transactions.filter(t =>
-      isExpense ? parseFloat(t.amount) < 0 : parseFloat(t.amount) > 0
-    );
+    // Filter transactions by type (expense/income) - ensure transactions is an array first
+    const filteredTransactions = Array.isArray(transactions)
+      ? transactions.filter((t) =>
+          isExpense ? parseFloat(t.amount) < 0 : parseFloat(t.amount) > 0,
+        )
+      : [];
 
     if (filteredTransactions.length === 0) {
       return [];
@@ -48,14 +52,14 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     twoMonthsAgo.setMonth(now.getMonth() - 2);
 
     // Filter transactions by time periods
-    const currentPeriodTxs = filteredTransactions.filter(t => {
+    const currentPeriodTxs = filteredTransactions.filter((t) => {
       const date = new Date(t.created_at);
       switch (timeFrame) {
-        case 'daily':
+        case "daily":
           return date >= oneWeekAgo;
-        case 'weekly':
+        case "weekly":
           return date >= oneMonthAgo;
-        case 'monthly':
+        case "monthly":
           return date >= twoMonthsAgo;
         default:
           return true;
@@ -63,20 +67,26 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     });
 
     // Sort by amount to find largest transaction
-    const sortedByAmount = [...currentPeriodTxs].sort((a, b) =>
-      Math.abs(parseFloat(b.amount)) - Math.abs(parseFloat(a.amount))
-    );
+    const sortedByAmount =
+      currentPeriodTxs && currentPeriodTxs.length
+        ? [...currentPeriodTxs].sort(
+            (a, b) =>
+              Math.abs(parseFloat(b.amount)) - Math.abs(parseFloat(a.amount)),
+          )
+        : [];
 
     // Group by category
     const categoryTotals = {};
-    currentPeriodTxs.forEach(t => {
-      const category = t.category || 'Other';
-      const amount = Math.abs(parseFloat(t.amount));
-      if (!categoryTotals[category]) {
-        categoryTotals[category] = 0;
-      }
-      categoryTotals[category] += amount;
-    });
+    if (Array.isArray(currentPeriodTxs)) {
+      currentPeriodTxs.forEach((t) => {
+        const category = t.category || "Other";
+        const amount = Math.abs(parseFloat(t.amount));
+        if (!categoryTotals[category]) {
+          categoryTotals[category] = 0;
+        }
+        categoryTotals[category] += amount;
+      });
+    }
 
     // Find top category
     let topCategory = null;
@@ -94,35 +104,51 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     let previousPeriodTotal = 0;
 
     switch (timeFrame) {
-      case 'daily':
+      case "daily":
         // Compare last 7 days to previous 7 days
-        currentPeriodTotal = currentPeriodTxs.reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0);
-        previousPeriodTotal = filteredTransactions
-          .filter(t => {
-            const date = new Date(t.created_at);
-            return date >= twoWeeksAgo && date < oneWeekAgo;
-          })
-          .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0);
+        currentPeriodTotal = Array.isArray(currentPeriodTxs)
+          ? currentPeriodTxs.reduce(
+              (sum, t) => sum + Math.abs(parseFloat(t.amount)),
+              0,
+            )
+          : 0;
+        previousPeriodTotal = Array.isArray(filteredTransactions)
+          ? filteredTransactions
+              .filter((t) => {
+                const date = new Date(t.created_at);
+                return date >= twoWeeksAgo && date < oneWeekAgo;
+              })
+              .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0)
+          : 0;
         break;
-      case 'weekly':
+      case "weekly":
         // Compare last 4 weeks to previous 4 weeks
-        currentPeriodTotal = currentPeriodTxs.reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0);
-        previousPeriodTotal = filteredTransactions
-          .filter(t => {
-            const date = new Date(t.created_at);
-            return date >= twoMonthsAgo && date < oneMonthAgo;
-          })
-          .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0);
+        currentPeriodTotal = Array.isArray(currentPeriodTxs)
+          ? currentPeriodTxs.reduce(
+              (sum, t) => sum + Math.abs(parseFloat(t.amount)),
+              0,
+            )
+          : 0;
+        previousPeriodTotal = Array.isArray(filteredTransactions)
+          ? filteredTransactions
+              .filter((t) => {
+                const date = new Date(t.created_at);
+                return date >= twoMonthsAgo && date < oneMonthAgo;
+              })
+              .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0)
+          : 0;
         break;
-      case 'monthly':
+      case "monthly":
         // Compare last 6 months trend (simplistic approach)
         const byMonth = {};
-        filteredTransactions.forEach(t => {
-          const date = new Date(t.created_at);
-          const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-          if (!byMonth[monthKey]) byMonth[monthKey] = 0;
-          byMonth[monthKey] += Math.abs(parseFloat(t.amount));
-        });
+        if (Array.isArray(filteredTransactions)) {
+          filteredTransactions.forEach((t) => {
+            const date = new Date(t.created_at);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            if (!byMonth[monthKey]) byMonth[monthKey] = 0;
+            byMonth[monthKey] += Math.abs(parseFloat(t.amount));
+          });
+        }
 
         const monthKeys = Object.keys(byMonth).sort().reverse();
         if (monthKeys.length >= 2) {
@@ -134,7 +160,9 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
 
     // Calculate percentage change
     if (previousPeriodTotal > 0) {
-      trendPercentage = ((currentPeriodTotal - previousPeriodTotal) / previousPeriodTotal) * 100;
+      trendPercentage =
+        ((currentPeriodTotal - previousPeriodTotal) / previousPeriodTotal) *
+        100;
     }
 
     // Generate insights based on calculations
@@ -143,22 +171,34 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     // Add trend insight
     if (previousPeriodTotal > 0) {
       const trendLabel = isExpense
-        ? (trendPercentage > 0 ? 'increased' : 'decreased')
-        : (trendPercentage > 0 ? 'increased' : 'decreased');
+        ? trendPercentage > 0
+          ? "increased"
+          : "decreased"
+        : trendPercentage > 0
+          ? "increased"
+          : "decreased";
 
       const trendIcon = isExpense
-        ? (trendPercentage > 0 ? 'trending-up' : 'trending-down')
-        : (trendPercentage > 0 ? 'trending-up' : 'trending-down');
+        ? trendPercentage > 0
+          ? "trending-up"
+          : "trending-down"
+        : trendPercentage > 0
+          ? "trending-up"
+          : "trending-down";
 
       const trendColor = isExpense
-        ? (trendPercentage > 0 ? COLORS.expense : COLORS.income)
-        : (trendPercentage > 0 ? COLORS.income : COLORS.expense);
+        ? trendPercentage > 0
+          ? COLORS.expense
+          : COLORS.income
+        : trendPercentage > 0
+          ? COLORS.income
+          : COLORS.expense;
 
       results.push({
-        id: 'trend',
+        id: "trend",
         icon: trendIcon,
         color: trendColor,
-        text: `Your ${isExpense ? 'spending' : 'income'} has ${trendLabel} by ${Math.abs(trendPercentage).toFixed(1)}% compared to the previous period.`
+        text: `Your ${isExpense ? "spending" : "income"} has ${trendLabel} by ${Math.abs(trendPercentage).toFixed(1)}% compared to the previous period.`,
       });
     }
 
@@ -166,10 +206,10 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     if (topCategory) {
       const percentage = (topCategoryAmount / currentPeriodTotal) * 100;
       results.push({
-        id: 'topCategory',
-        icon: 'pie-chart',
+        id: "topCategory",
+        icon: "pie-chart",
         color: isExpense ? COLORS.expense : COLORS.income,
-        text: `${Math.round(percentage)}% of your ${isExpense ? 'expenses' : 'income'} went to ${topCategory}.`
+        text: `${Math.round(percentage)}% of your ${isExpense ? "expenses" : "income"} went to ${topCategory}.`,
       });
     }
 
@@ -177,21 +217,23 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
     if (sortedByAmount.length > 0) {
       const largestTx = sortedByAmount[0];
       results.push({
-        id: 'largestTransaction',
-        icon: 'cash',
+        id: "largestTransaction",
+        icon: "cash",
         color: COLORS.primary,
-        text: `Your largest ${isExpense ? 'expense' : 'income'} was $${Math.abs(parseFloat(largestTx.amount)).toFixed(2)} for ${largestTx.title}.`
+        text: `Your largest ${isExpense ? "expense" : "income"} was $${Math.abs(parseFloat(largestTx.amount)).toFixed(2)} for ${largestTx.title}.`,
       });
     }
 
     // Add frequency insight
-    const transactionsPerDay = currentPeriodTxs.length / (timeFrame === 'daily' ? 7 : timeFrame === 'weekly' ? 28 : 180);
+    const transactionsPerDay =
+      (Array.isArray(currentPeriodTxs) ? currentPeriodTxs.length : 0) /
+      (timeFrame === "daily" ? 7 : timeFrame === "weekly" ? 28 : 180);
     if (transactionsPerDay > 0) {
       results.push({
-        id: 'frequency',
-        icon: 'time',
+        id: "frequency",
+        icon: "time",
         color: COLORS.primary,
-        text: `You average ${transactionsPerDay.toFixed(1)} ${isExpense ? 'expenses' : 'transactions'} per day.`
+        text: `You average ${transactionsPerDay.toFixed(1)} ${isExpense ? "expenses" : "transactions"} per day.`,
       });
     }
 
@@ -212,7 +254,12 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
       <View style={styles.insightsContainer}>
         {insights.map((insight, index) => (
           <View key={insight.id} style={styles.insightItem}>
-            <View style={[styles.iconContainer, { backgroundColor: `${insight.color}15` }]}>
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: `${insight.color}15` },
+              ]}
+            >
               <Ionicons name={insight.icon} size={20} color={insight.color} />
             </View>
             <Text style={styles.insightText}>{insight.text}</Text>
@@ -226,10 +273,10 @@ const TrendSummary = ({ transactions, filterType, timeFrame }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.white,
-    marginHorizontal: 20,
+    marginHorizontal: Math.max(screenWidth * 0.04, 16),
     marginBottom: 20,
     borderRadius: 16,
-    padding: 20,
+    padding: Math.max(screenWidth * 0.04, 16),
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -239,34 +286,34 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: Math.max(screenWidth * 0.04, 14),
+    gap: Math.max(screenWidth * 0.02, 6),
   },
   title: {
-    fontSize: 18,
+    fontSize: Math.max(screenWidth * 0.045, 16),
     fontWeight: "600",
     color: COLORS.text,
   },
   insightsContainer: {
-    gap: 12,
+    gap: Math.max(screenWidth * 0.03, 10),
   },
   insightItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: Math.max(screenWidth * 0.03, 10),
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: Math.max(screenWidth * 0.09, 36),
+    height: Math.max(screenWidth * 0.09, 36),
+    borderRadius: Math.max(screenWidth * 0.045, 18),
     justifyContent: "center",
     alignItems: "center",
   },
   insightText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: Math.max(screenWidth * 0.035, 13),
     color: COLORS.text,
-    lineHeight: 20,
+    lineHeight: Math.max(screenWidth * 0.05, 18),
   },
 });
 

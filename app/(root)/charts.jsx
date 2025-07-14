@@ -50,7 +50,7 @@ const ExpenseChartPage = () => {
       duration: 500,
       useNativeDriver: true,
     }).start();
-  }, [user?.id, refreshData]);
+  }, [user?.id, refreshData, fadeAnim]);
 
   // Monitor app state for background/foreground transitions
   useEffect(() => {
@@ -255,19 +255,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginLeft: 10,
   },
-  refreshButton: {
-    backgroundColor: COLORS.white,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    marginLeft: 10,
+  refreshIcon: {
+    fontSize: 24,
+    color: COLORS.primary,
+  },
+  refreshText: {
+    fontSize: 14,
+    color: COLORS.primary,
   },
 });
 

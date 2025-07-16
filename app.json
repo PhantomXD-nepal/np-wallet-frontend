@@ -35,9 +35,6 @@
     "extra": {
       "router": {
         "origin": "https://github.com/expo/router/releases/download"
-      },
-      "eas": {
-        "projectId": "4fc08bc3-4d15-4492-b2dd-6502838f6cf5"
       }
     },
     "scheme": "fintrack",
